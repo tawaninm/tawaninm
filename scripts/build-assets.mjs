@@ -5,6 +5,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { profile, palette as c } from "./profile.mjs";
+import { AVATAR, AVATAR_COLORS, AVATAR_EYES, AVATAR_W, AVATAR_H } from "./avatar.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = join(root, "assets");
@@ -150,15 +151,141 @@ const CLOUD = [
   ".oooooooooooo.",
 ];
 
+// ---------- window chrome (shared by every card) ----------
+
+const FX = 10; // frame inset leaves room for the offset shadow
+const BAR = 42;
+
+// Returns the pieces of an app window: `defs` for <defs>, `back` to draw first
+// (shadow + body fill), `front` to draw last (title bar + outline).
+function windowChrome(W, H, title, icon, bodyFill) {
+  const fw = W - FX * 2 - 8;
+  const fh = H - FX * 2 - 8;
+  const defs = `
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="${c.titleA}"/>
+      <stop offset="1" stop-color="${c.titleB}"/>
+    </linearGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect x="7" y="7" width="2" height="2" fill="#FFFFFF" opacity=".45"/>
+    </pattern>
+    <clipPath id="body"><rect x="${FX}" y="${FX + BAR}" width="${fw}" height="${fh - BAR}"/></clipPath>`;
+  const back = `
+  <rect x="${FX + 8}" y="${FX + 8}" width="${fw}" height="${fh}" rx="14" fill="${c.ink}"/>
+  <rect x="${FX}" y="${FX}" width="${fw}" height="${fh}" rx="14" fill="${bodyFill}"/>
+  <rect x="${FX}" y="${FX + BAR}" width="${fw}" height="${fh - BAR}" fill="url(#dots)"/>`;
+  const buttons = ["_", "□", "×"]
+    .map((g, i) => {
+      const bx = FX + fw - 110 + i * 34;
+      return `<rect x="${bx}" y="${FX + 9}" width="26" height="24" rx="5" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/><text x="${bx + 13}" y="${FX + 26}" text-anchor="middle" font-family="${MONO}" font-size="15" font-weight="700" fill="${c.ink}">${g}</text>`;
+    })
+    .join("");
+  const front = `
+  <path d="M${FX} ${FX + 14} a14 14 0 0 1 14 -14 h${fw - 28} a14 14 0 0 1 14 14 v${BAR - 14} h-${fw} z" fill="url(#bar)"/>
+  <line x1="${FX}" y1="${FX + BAR}" x2="${FX + fw}" y2="${FX + BAR}" stroke="${c.ink}" stroke-width="3"/>
+  ${pixels(ICONS[icon], ICON_COLORS, FX + 14, FX + 12, 2)}
+  <text x="${FX + 42}" y="${FX + 27}" font-family="${MONO}" font-size="15" font-weight="700" fill="${c.paper}">${esc(title)}</text>
+  ${buttons}
+  <rect x="${FX}" y="${FX}" width="${fw}" height="${fh}" rx="14" fill="none" stroke="${c.ink}" stroke-width="3"/>`;
+  return { defs, back, front, fw, fh };
+}
+
+// ---------- motion (shared by every card) ----------
+
+// One stylesheet for all cards. Everything stops under prefers-reduced-motion;
+// each element's resting state is a sensible static frame.
+const MOTION_CSS = `
+    .twinkle { transform-box: fill-box; transform-origin: center; animation: twinkle 2.4s ease-in-out infinite; }
+    .drift { animation: drift 14s ease-in-out infinite alternate; }
+    .drift2 { animation: drift 18s ease-in-out infinite alternate-reverse; }
+    .bokeh { transform-box: fill-box; transform-origin: center; animation: bokeh 11s ease-in-out infinite alternate; }
+    .rise { transform-box: fill-box; transform-origin: center; animation: rise 7s linear infinite both; }
+    .sweep { animation: sweep 5s linear infinite; }
+    .pop { transform-box: fill-box; transform-origin: 20% 100%; animation: pop 5s ease-out infinite both; }
+    .glitch { opacity: 0; animation: glitch 6s steps(1) infinite; }
+    .bob { animation: bob 3s ease-in-out infinite; }
+    .blink { opacity: 0; animation: blink 4s steps(1) infinite; }
+    .charge { animation: charge 6s ease-out infinite both; }
+    @keyframes twinkle { 0%,100% { transform: scale(1); opacity: 1 } 50% { transform: scale(.55); opacity: .6 } }
+    @keyframes drift { from { transform: translateX(0) } to { transform: translateX(40px) } }
+    @keyframes bokeh { from { transform: translate(0,0) scale(1) } to { transform: translate(24px,-18px) scale(1.12) } }
+    @keyframes rise { 0% { transform: translateY(0) scale(.6); opacity: 0 } 15% { opacity: 1 } 80% { opacity: 1 } 100% { transform: translateY(-240px) scale(1.1); opacity: 0 } }
+    @keyframes sweep { from { transform: translateY(0) } to { transform: translateY(340px) } }
+    @keyframes pop { 0%,55% { transform: scale(0) } 62% { transform: scale(1.18) } 68%,92% { transform: scale(1) } 100% { transform: scale(0) } }
+    @keyframes glitch { 0% { opacity: 0 } 90% { opacity: .95; transform: translateX(-4px) } 92% { opacity: 0 } 94% { opacity: .95; transform: translateX(3px) } 96% { opacity: 0 } }
+    @keyframes bob { 50% { transform: translateY(-5px) } }
+    @keyframes blink { 0% { opacity: 0 } 92% { opacity: 1 } 95% { opacity: 0 } }
+    @keyframes charge { 0% { opacity: 0 } 12% { opacity: 1 } 88% { opacity: 1 } 100% { opacity: 0 } }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; }
+      .glitch, .blink { opacity: 0; }
+    }`;
+
+// Soft out-of-focus circles drifting behind the content.
+function bokeh(circles) {
+  return circles
+    .map(([x, y, r, d]) => `<circle class="bokeh" style="animation-delay:-${d}s" cx="${x}" cy="${y}" r="${r}" fill="#FFFFFF" opacity=".22"/>`)
+    .join("");
+}
+
+// Small sparkles that float up from `baseY` and fade, staggered.
+function risers(xs, baseY, colors) {
+  return xs
+    .map((x, i) => {
+      const r = 3 + (i % 3);
+      const k = r * 0.3;
+      const y = baseY + (i % 4) * 8;
+      const d = `M${x} ${y - r} L${x + k} ${y - k} L${x + r} ${y} L${x + k} ${y + k} L${x} ${y + r} L${x - k} ${y + k} L${x - r} ${y} L${x - k} ${y - k}Z`;
+      return `<path class="rise" style="animation-delay:${(i * 0.83) % 7}s;animation-duration:${6 + (i % 3)}s" d="${d}" fill="${colors[i % colors.length]}"/>`;
+    })
+    .join("");
+}
+
+// CRT overlay: faint scanlines plus a bright band sweeping down.
+// Returns `defs` for <defs> and `layer` to draw on top of the content.
+function crt(x, y, w, h) {
+  const defs = `
+    <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1" fill="${c.ink}" opacity=".06"/></pattern>
+    <linearGradient id="band" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#FFFFFF" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>`;
+  const layer = `
+  <g clip-path="url(#body)">
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#scan)"/>
+    <rect class="sweep" x="${x}" y="${y - 40}" width="${w}" height="40" fill="url(#band)"/>
+  </g>`;
+  return { defs, layer };
+}
+
+const BUBBLE = [
+  ".ooooooooo.",
+  "owwwwwwwwwo",
+  "owwPPwPPwwo",
+  "owPPPPPPPwo",
+  "owPPPPPPPwo",
+  "owwPPPPPwwo",
+  "owwwPPPwwwo",
+  "owwwwPwwwwo",
+  ".oowoooooo.",
+  "..ow.......",
+  "..o........",
+];
+
+// Pixel speech bubble with a heart that pops in, holds, and shrinks away.
+function heartBubble(x, y, size, delay) {
+  return `<g class="pop" style="animation-delay:${delay}s">${pixels(BUBBLE, { o: c.ink, w: "#FFFFFF", P: c.hotPink }, x, y, size)}</g>`;
+}
+
 // ---------- welcome.svg ----------
 
 function welcome() {
   const W = 840;
   const H = 360;
-  const bar = 42;
-  const fx = 10; // frame inset leaves room for the offset shadow
-  const fw = W - fx * 2 - 8;
-  const fh = H - fx * 2 - 8;
+  const fx = FX;
+  const { defs, back, front, fw, fh } = windowChrome(W, H, "welcome.exe — TAWAN-OS", "heart", "url(#sky)");
+  const screen = crt(fx, fx + BAR, fw, fh - BAR);
 
   // Typewriter: each line reveals through a clip rect, one after another.
   const lines = profile.typewriter.map((t) => `> ${t}`);
@@ -210,13 +337,7 @@ function welcome() {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t d">
   <title id="t">welcome.exe — TAWAN-OS</title>
   <desc id="d">${esc(`${profile.name} (${profile.nickname}). ${profile.roles.join(", ")}. ${profile.school}.`)}</desc>
-  <style>
-    .twinkle { transform-box: fill-box; transform-origin: center; animation: twinkle 2.4s ease-in-out infinite; }
-    .drift { animation: drift 14s ease-in-out infinite alternate; }
-    .drift2 { animation: drift 18s ease-in-out infinite alternate-reverse; }
-    @keyframes twinkle { 0%,100% { transform: scale(1); opacity: 1 } 50% { transform: scale(.55); opacity: .6 } }
-    @keyframes drift { from { transform: translateX(0) } to { transform: translateX(40px) } }
-    @media (prefers-reduced-motion: reduce) { .twinkle, .drift, .drift2 { animation: none } }
+  <style>${MOTION_CSS}
   </style>
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
@@ -224,23 +345,14 @@ function welcome() {
       <stop offset=".5" stop-color="${c.sakura}"/>
       <stop offset="1" stop-color="${c.sky}"/>
     </linearGradient>
-    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="${c.titleA}"/>
-      <stop offset="1" stop-color="${c.titleB}"/>
-    </linearGradient>
-    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
-      <rect x="7" y="7" width="2" height="2" fill="#FFFFFF" opacity=".45"/>
-    </pattern>
-    <clipPath id="body"><rect x="${fx}" y="${fx + bar}" width="${fw}" height="${fh - bar}" rx="0"/></clipPath>
+    ${defs}${screen.defs}
   </defs>
 
-  <!-- shadow + frame -->
-  <rect x="${fx + 8}" y="${fx + 8}" width="${fw}" height="${fh}" rx="14" fill="${c.ink}"/>
-  <rect x="${fx}" y="${fx}" width="${fw}" height="${fh}" rx="14" fill="url(#sky)"/>
-  <rect x="${fx}" y="${fx + bar}" width="${fw}" height="${fh - bar}" fill="url(#dots)"/>
+  ${back}
 
   <!-- scenery -->
   <g clip-path="url(#body)">
+    ${bokeh([[120, 120, 90, 0], [470, 250, 110, 4], [700, 110, 70, 7], [300, 330, 80, 2]])}
     ${pixels(ICONS.sun, ICON_COLORS, 560, 70, 7)}
     <g class="drift">${pixels(CLOUD, { o: c.ink, w: "#FFFFFF", s: c.lavender }, 410, 60, 4)}</g>
     <g class="drift2">${pixels(CLOUD, { o: c.ink, w: "#FFFFFF", s: c.lavender }, 560, 190, 4)}</g>
@@ -249,24 +361,16 @@ function welcome() {
     ${sparkle(660, 236, 9, c.gold, 0.8)}
     ${sparkle(612, 262, 7, "#FFFFFF", 1.6)}
     ${sparkle(372, 210, 6, c.gold, 0.4)}
+    ${risers([60, 150, 250, 330, 420, 500, 590, 650, 700, 780, 200, 460], 330, ["#FFFFFF", c.gold, "#FFFFFF", c.sky])}
   </g>
 
-  <!-- title bar -->
-  <path d="M${fx} ${fx + 14} a14 14 0 0 1 14 -14 h${fw - 28} a14 14 0 0 1 14 14 v${bar - 14} h-${fw} z" fill="url(#bar)"/>
-  <line x1="${fx}" y1="${fx + bar}" x2="${fx + fw}" y2="${fx + bar}" stroke="${c.ink}" stroke-width="3"/>
-  ${pixels(ICONS.heart, ICON_COLORS, fx + 14, fx + 12, 2)}
-  <text x="${fx + 42}" y="${fx + 27}" font-family="${MONO}" font-size="15" font-weight="700" fill="${c.paper}">welcome.exe — TAWAN-OS</text>
-  ${["_", "□", "×"]
-    .map((g, i) => {
-      const bx = fx + fw - 110 + i * 34;
-      return `<rect x="${bx}" y="${fx + 9}" width="26" height="24" rx="5" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/><text x="${bx + 13}" y="${fx + 26}" text-anchor="middle" font-family="${MONO}" font-size="15" font-weight="700" fill="${c.ink}">${g}</text>`;
-    })
-    .join("")}
-  <rect x="${fx}" y="${fx}" width="${fw}" height="${fh}" rx="14" fill="none" stroke="${c.ink}" stroke-width="3"/>
+  ${front}
 
   <!-- greeting -->
   <rect x="38" y="72" width="132" height="26" rx="13" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/>
   <text x="104" y="90" text-anchor="middle" font-family="${MONO}" font-size="13" fill="${c.ink}">hello, world!</text>
+  <text class="glitch" x="38" y="150" font-family="${SANS}" font-size="46" font-weight="700" fill="${c.sky}" stroke="${c.sky}" stroke-width="8" stroke-linejoin="round">${esc(profile.name)}</text>
+  <text class="glitch" style="animation-direction:reverse" x="38" y="150" font-family="${SANS}" font-size="46" font-weight="700" fill="${c.hotPink}" stroke="${c.hotPink}" stroke-width="8" stroke-linejoin="round">${esc(profile.name)}</text>
   <text x="38" y="150" font-family="${SANS}" font-size="46" font-weight="700" fill="${c.paper}" stroke="${c.ink}" stroke-width="8" stroke-linejoin="round" paint-order="stroke">${esc(profile.name)}</text>
   <text x="40" y="182" font-family="${SANS}" font-size="18" font-weight="700" fill="${c.ink}">aka ${esc(profile.nickname)} · ${esc(profile.roles.join(" · "))}</text>
   <text x="40" y="208" font-family="${SANS}" font-size="15" fill="${c.ink}">${esc(profile.school)}</text>
@@ -282,6 +386,133 @@ function welcome() {
   <rect x="34" y="${fx + fh - 30}" width="210" height="22" rx="11" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/>
   <circle cx="50" cy="${fx + fh - 19}" r="5" fill="#2F9E44" stroke="${c.ink}" stroke-width="1.5"/>
   <text x="62" y="${fx + fh - 14}" font-family="${MONO}" font-size="12" fill="${c.ink}">online · ${esc(profile.location)}</text>
+
+  ${heartBubble(628, 58, 3, 0.5)}
+  ${screen.layer}
+</svg>
+`;
+}
+
+// ---------- profile.sys ----------
+
+const CHIP_FILLS = [c.sakura, c.sky, c.mint, c.lavender, c.gold];
+const MONO12_W = 7.3; // approx advance of a 12px monospace glyph
+
+function profileCard() {
+  const W = 840;
+  const H = 440;
+  const { defs, back, front } = windowChrome(W, H, "profile.sys", "star", c.paper);
+  const rx = 256; // right column start
+  const rEnd = 800;
+
+  // left: avatar panel — a small pixel "screen" showing the avatar
+  const px = 4;
+  const scr = { x: 44, y: 82, w: 172, h: AVATAR_H * px };
+  const ax = 130 - (AVATAR_W * px) / 2;
+  const blink = AVATAR_EYES.map(([x, y, , h]) => `<rect x="${ax + x * px}" y="${scr.y + y * px}" width="${2 * px}" height="${(h - 1) * px}" fill="${AVATAR_COLORS.s}"/>`).join("");
+  const avatar = `
+  <rect x="30" y="70" width="200" height="236" rx="10" fill="${c.sky}" stroke="${c.ink}" stroke-width="2.5"/>
+  <rect x="${scr.x}" y="${scr.y}" width="${scr.w}" height="${scr.h}" fill="url(#screenBg)"/>
+  <rect x="${scr.x}" y="${scr.y}" width="${scr.w}" height="${scr.h}" fill="url(#halftone)"/>
+  <g clip-path="url(#screen)">
+    ${sparkle(scr.x + 18, scr.y + 22, 6, "#FFFFFF", 0.3)}
+    ${sparkle(scr.x + scr.w - 16, scr.y + 60, 5, c.gold, 1.1)}
+    ${sparkle(scr.x + 14, scr.y + 104, 4, "#FFFFFF", 1.9)}
+    <g class="bob">
+      ${pixels(AVATAR, AVATAR_COLORS, ax, scr.y, px)}
+      <g class="blink">${blink}</g>
+    </g>
+  </g>
+  <rect x="${scr.x}" y="${scr.y}" width="${scr.w}" height="${scr.h}" fill="none" stroke="${c.ink}" stroke-width="2.5"/>
+  ${heartBubble(170, 70, 3, 1.2)}
+  <text x="130" y="250" text-anchor="middle" font-family="${SANS}" font-size="22" font-weight="700" fill="${c.ink}">${esc(profile.nickname)}</text>
+  <text x="130" y="268" text-anchor="middle" font-family="${MONO}" font-size="12" fill="${c.ink}">LV.3 · IT student</text>
+  <rect x="62" y="278" width="136" height="22" rx="11" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/>
+  <text x="130" y="293" text-anchor="middle" font-family="${MONO}" font-size="12" fill="${c.ink}">${esc(profile.location)}</text>`;
+
+  // right: stat rows
+  const rows = profile.stats
+    .map(([k, v], i) => {
+      const y = 92 + i * 28;
+      return `
+  <text x="${rx}" y="${y}" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.ink}">${esc(k)}</text>
+  <text x="${rx + 110}" y="${y}" font-family="${MONO}" font-size="14" fill="${c.ink}">${esc(v)}</text>
+  <line x1="${rx}" y1="${y + 9}" x2="${rEnd}" y2="${y + 9}" stroke="${c.lavender}" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+    })
+    .join("");
+
+  // engine bars: 5 segments, filled up to the stated level
+  const engines = profile.engines
+    .map(([name, level, label], i) => {
+      const x = rx + (i % 2) * 276;
+      const y = 234 + Math.floor(i / 2) * 40;
+      const segs = Array.from({ length: 5 }, (_, s) => {
+        const on = s < level;
+        const sx = x + 128 + s * 24;
+        const base = `<rect x="${sx}" y="${y - 12}" width="20" height="14" rx="2" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/>`;
+        return on
+          ? base + `<rect class="charge" style="animation-delay:${(s * 0.25 + i * 0.1).toFixed(2)}s" x="${sx}" y="${y - 12}" width="20" height="14" rx="2" fill="${c.titleB}" stroke="${c.ink}" stroke-width="1.5"/>`
+          : base;
+      }).join("");
+      return `
+  <text x="${x}" y="${y}" font-family="${MONO}" font-size="13" font-weight="700" fill="${c.ink}">${esc(name)}</text>
+  <text x="${x}" y="${y + 16}" font-family="${MONO}" font-size="11" fill="${c.ink}">${esc(label)}</text>
+  ${segs}`;
+    })
+    .join("");
+
+  // inventory chips, wrapped to the right column
+  let cx = rx;
+  let cy = 336;
+  const chips = profile.inventory
+    .map((item, i) => {
+      const w = Math.ceil(item.length * MONO12_W) + 18;
+      if (cx + w > rEnd) {
+        cx = rx;
+        cy += 30;
+      }
+      const out = `<rect x="${cx}" y="${cy}" width="${w}" height="22" rx="11" fill="${CHIP_FILLS[i % CHIP_FILLS.length]}" stroke="${c.ink}" stroke-width="1.5"/><text x="${cx + w / 2}" y="${cy + 15}" text-anchor="middle" font-family="${MONO}" font-size="12" fill="${c.ink}">${esc(item)}</text>`;
+      cx += w + 6;
+      return out;
+    })
+    .join("");
+
+  const heading = (x, y, text) =>
+    `<rect x="${x}" y="${y - 15}" width="${Math.ceil(text.length * MONO12_W) + 20}" height="20" rx="4" fill="${c.ink}"/><text x="${x + 10}" y="${y}" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.paper}">${esc(text)}</text>`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t d">
+  <title id="t">profile.sys — TAWAN-OS</title>
+  <desc id="d">${esc(
+    `${profile.stats.map(([k, v]) => `${k}: ${v}`).join(". ")}. Engines: ${profile.engines
+      .map(([n, , l]) => `${n} ${l}`)
+      .join(", ")}. Inventory: ${profile.inventory.join(", ")}. Motto: ${profile.motto}`
+  )}</desc>
+  <style>${MOTION_CSS}
+  </style>
+  <defs>${defs}
+    <linearGradient id="screenBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${c.sakura}"/>
+      <stop offset="1" stop-color="${c.lavender}"/>
+    </linearGradient>
+    <pattern id="halftone" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect x="3" y="3" width="2" height="2" fill="#FFFFFF" opacity=".5"/>
+    </pattern>
+    <clipPath id="screen"><rect x="44" y="82" width="172" height="${AVATAR_H * 4}"/></clipPath>
+  </defs>
+  ${back}
+  ${avatar}
+  ${rows}
+  ${heading(rx, 208, "ENGINE XP")}
+  ${engines}
+  ${heading(rx, 324, "INVENTORY")}
+  ${chips}
+  <text x="130" y="336" text-anchor="middle" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.ink}">MOTTO</text>
+  <text font-family="${SANS}" font-size="13" font-style="italic" fill="${c.ink}" text-anchor="middle">
+    <tspan x="130" y="356">“take care of your work,</tspan>
+    <tspan x="130" y="374">and your work will</tspan>
+    <tspan x="130" y="392">take care of you.”</tspan>
+  </text>
+  ${front}
 </svg>
 `;
 }
@@ -319,12 +550,16 @@ const textPairs = [
   ["ink on mint", c.ink, c.mint],
   ["paper on title start", c.paper, c.titleA],
   ["paper on title end", c.paper, c.titleB],
+  ["ink on gold", c.ink, c.gold],
+  ["paper on ink", c.paper, c.ink],
+  // non-text: filled vs empty skill segment needs 3:1 (WCAG 1.4.11)
+  ["segment filled vs empty", c.titleB, c.paper, 3],
 ];
 
 let failed = false;
-for (const [name, fg, bg] of textPairs) {
+for (const [name, fg, bg, min = 4.5] of textPairs) {
   const ratio = contrast(fg, bg);
-  const ok = ratio >= 4.5;
+  const ok = ratio >= min;
   if (!ok) failed = true;
   console.log(`${ok ? "pass" : "FAIL"}  ${ratio.toFixed(2)}:1  ${name}`);
 }
@@ -337,5 +572,6 @@ if (failed) {
 
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, "welcome.svg"), welcome());
+writeFileSync(join(outDir, "profile.svg"), profileCard());
 for (const b of buttons) writeFileSync(join(outDir, b.file), taskButton(b));
-console.log(`wrote ${1 + buttons.length} files to assets/`);
+console.log(`wrote ${2 + buttons.length} files to assets/`);
