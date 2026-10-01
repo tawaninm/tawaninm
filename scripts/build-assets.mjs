@@ -118,6 +118,17 @@ const ICONS = {
     "..o....o..",
     "..........",
   ],
+  trophy: [
+    "oooooooooo",
+    "oyyywyyYYo",
+    ".oyyyyyYo.",
+    ".oyyyyyYo.",
+    "..oyyyYo..",
+    "...oyYo...",
+    "....oo....",
+    "...oyYo...",
+    "..oooooo..",
+  ],
   sun: [
     "...oooo...",
     ".ooyyyyoo.",
@@ -206,6 +217,8 @@ const MOTION_CSS = `
     .bob { animation: bob 3s ease-in-out infinite; }
     .blink { opacity: 0; animation: blink 4s steps(1) infinite; }
     .charge { animation: charge 6s ease-out infinite both; }
+    .slidein { animation: slidein .6s cubic-bezier(.16,1,.3,1) 1 both; }
+    .dot { transform-box: fill-box; animation: dot 1.2s ease-in-out infinite; }
     @keyframes twinkle { 0%,100% { transform: scale(1); opacity: 1 } 50% { transform: scale(.55); opacity: .6 } }
     @keyframes drift { from { transform: translateX(0) } to { transform: translateX(40px) } }
     @keyframes bokeh { from { transform: translate(0,0) scale(1) } to { transform: translate(24px,-18px) scale(1.12) } }
@@ -216,6 +229,8 @@ const MOTION_CSS = `
     @keyframes bob { 50% { transform: translateY(-5px) } }
     @keyframes blink { 0% { opacity: 0 } 92% { opacity: 1 } 95% { opacity: 0 } }
     @keyframes charge { 0% { opacity: 0 } 12% { opacity: 1 } 88% { opacity: 1 } 100% { opacity: 0 } }
+    @keyframes slidein { from { transform: translateX(-14px); opacity: 0 } to { transform: none; opacity: 1 } }
+    @keyframes dot { 0%,60%,100% { transform: translateY(0) } 30% { transform: translateY(-5px) } }
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; }
       .glitch, .blink { opacity: 0; }
@@ -517,6 +532,114 @@ function profileCard() {
 `;
 }
 
+// ---------- experience.log ----------
+
+// Splits text into lines of at most `max` characters, breaking on spaces.
+function wrap(text, max) {
+  const lines = [];
+  let line = "";
+  for (const word of text.split(" ")) {
+    if (line && (line + " " + word).length > max) {
+      lines.push(line);
+      line = word;
+    } else line = line ? line + " " + word : word;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function experienceCard() {
+  const W = 840;
+  const H = 540;
+  const { defs, back, front, fw, fh } = windowChrome(W, H, "experience.log", "code", c.paper);
+  const bottom = FX + fh;
+
+  // chat bubbles, newest first
+  const bubbles = profile.experience
+    .map(([icon, role, org, dates, current, note], i) => {
+      const y = 66 + i * 68;
+      const fill = CHIP_FILLS[i % CHIP_FILLS.length];
+      const chipW = Math.ceil(dates.length * 6.7) + 16;
+      const chipX = 556 - chipW;
+      return `
+  <g class="slidein" style="animation-delay:${(0.15 + i * 0.22).toFixed(2)}s">
+    <rect x="30" y="${y + 6}" width="40" height="40" rx="10" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/>
+    ${pixels(ICONS[icon], ICON_COLORS, 35, y + 13, 3)}
+    <path d="M78 ${y + 20} l-8 6 l8 4 z" fill="${fill}" stroke="${c.ink}" stroke-width="2" stroke-linejoin="round"/>
+    <rect x="78" y="${y}" width="486" height="60" rx="12" fill="${fill}" stroke="${c.ink}" stroke-width="2"/>
+    <rect x="76" y="${y + 21}" width="4" height="8" fill="${fill}"/>
+    <text x="92" y="${y + 21}" font-family="${SANS}" font-size="15" font-weight="700" fill="${c.ink}">${esc(role)}</text>
+    <text x="92" y="${y + 37}" font-family="${MONO}" font-size="11" fill="${c.ink}">${esc(org)}</text>
+    <text x="92" y="${y + 53}" font-family="${SANS}" font-size="12.5" fill="${c.ink}">${esc(note)}</text>
+    <rect x="${chipX}" y="${y + 8}" width="${chipW}" height="18" rx="9" fill="${current ? c.titleB : c.paper}" stroke="${c.ink}" stroke-width="1.5"/>
+    <text x="${chipX + chipW / 2}" y="${y + 21}" text-anchor="middle" font-family="${MONO}" font-size="11" fill="${current ? c.paper : c.ink}">${esc(dates)}</text>
+  </g>`;
+    })
+    .join("");
+
+  // input bar with a typing indicator
+  const barY = bottom - 44;
+  const input = `
+  <rect x="30" y="${barY}" width="534" height="30" rx="15" fill="#FFFFFF" stroke="${c.ink}" stroke-width="2"/>
+  <text x="48" y="${barY + 20}" font-family="${MONO}" font-size="12" fill="${c.ink}">tawan is typing</text>
+  ${[0, 1, 2].map((d) => `<circle class="dot" style="animation-delay:${d * 0.15}s" cx="${172 + d * 10}" cy="${barY + 16}" r="3" fill="${c.titleB}"/>`).join("")}
+  <rect x="482" y="${barY + 4}" width="76" height="22" rx="11" fill="${c.titleB}" stroke="${c.ink}" stroke-width="1.5"/>
+  <text x="520" y="${barY + 19}" text-anchor="middle" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.paper}">SEND</text>`;
+
+  // trophies sidebar
+  const sx = 586;
+  const sw = 226;
+  const trophies = profile.achievements
+    .map(([title, detail, year], j) => {
+      const y = 98 + j * 76;
+      const lines = wrap(detail, 32);
+      return `
+  <rect x="${sx}" y="${y}" width="${sw}" height="68" rx="10" fill="${CHIP_FILLS[(j + 2) % CHIP_FILLS.length]}" stroke="${c.ink}" stroke-width="2"/>
+  ${pixels(ICONS.trophy, ICON_COLORS, sx + 10, y + 9, 2)}
+  <text x="${sx + 36}" y="${y + 22}" font-family="${MONO}" font-size="13" font-weight="700" fill="${c.ink}">${esc(title)}</text>
+  <text x="${sx + sw - 10}" y="${y + 22}" text-anchor="end" font-family="${MONO}" font-size="11" fill="${c.ink}">${year}</text>
+  ${lines.map((l, k) => `<text x="${sx + 12}" y="${y + 41 + k * 15}" font-family="${SANS}" font-size="12" fill="${c.ink}">${esc(l)}</text>`).join("")}`;
+    })
+    .join("");
+
+  // languages (levels from the resume, rounded to 5 segments)
+  const langY = 98 + profile.achievements.length * 76 + 8;
+  const langs = profile.languages
+    .map(([lang, level, label], k) => {
+      const y = langY + 26 + k * 22;
+      const segs = Array.from({ length: 5 }, (_, s) => `<rect x="${sx + 84 + s * 15}" y="${y - 10}" width="12" height="11" rx="2" fill="${s < level ? c.titleB : c.paper}" stroke="${c.ink}" stroke-width="1.2"/>`).join("");
+      return `<text x="${sx + 4}" y="${y}" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.ink}">${esc(lang)}</text>${segs}<text x="${sx + 166}" y="${y}" font-family="${MONO}" font-size="10" fill="${c.ink}">${esc(label)}</text>`;
+    })
+    .join("");
+
+  const heading = (x, y, text) =>
+    `<rect x="${x}" y="${y - 15}" width="${Math.ceil(text.length * MONO12_W) + 20}" height="20" rx="4" fill="${c.ink}"/><text x="${x + 10}" y="${y}" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.paper}">${esc(text)}</text>`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t d">
+  <title id="t">experience.log — TAWAN-OS</title>
+  <desc id="d">${esc(
+    `Work history: ${profile.experience.map(([, r, o, d, , n]) => `${r}, ${o}, ${d}: ${n}`).join(". ")}. Trophies: ${profile.achievements
+      .map(([t, d, y]) => `${t}, ${d}, ${y}`)
+      .join(". ")}. Languages: ${profile.languages.map(([l, , lab]) => `${l} ${lab}`).join(", ")}.`
+  )}</desc>
+  <style>${MOTION_CSS}
+  </style>
+  <defs>${defs}
+  </defs>
+  ${back}
+  <line x1="574" y1="${FX + BAR + 12}" x2="574" y2="${bottom - 12}" stroke="${c.lavender}" stroke-width="2" stroke-dasharray="4 4"/>
+  ${bubbles}
+  ${input}
+  ${heading(sx, 84, "TROPHIES")}
+  ${sparkle(sx + sw - 14, 72, 7, c.gold, 0.2)}
+  ${trophies}
+  ${heading(sx, langY + 6, "LANGUAGES")}
+  ${langs}
+  ${front}
+</svg>
+`;
+}
+
 // ---------- taskbar buttons ----------
 
 function taskButton({ label, icon, fill, title }) {
@@ -573,5 +696,6 @@ if (failed) {
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, "welcome.svg"), welcome());
 writeFileSync(join(outDir, "profile.svg"), profileCard());
+writeFileSync(join(outDir, "experience.svg"), experienceCard());
 for (const b of buttons) writeFileSync(join(outDir, b.file), taskButton(b));
-console.log(`wrote ${2 + buttons.length} files to assets/`);
+console.log(`wrote ${3 + buttons.length} files to assets/`);

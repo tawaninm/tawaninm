@@ -12,6 +12,8 @@
 
 <img src="assets/profile.svg" alt="profile.sys — Class: AI Solution, Game Dev and Tutor. Guild: IT KMITL, Multimedia &amp; Game Tech, year 3. Job: Coding Teacher at Code Genius EmQuartier. Side quest: AI Solution, Programmer and UX/UI. Engine XP: Godot, Unity and Unreal intermediate (3 of 5), Roblox Studio beginner (1 of 5). Inventory: Claude, ChatGPT, Gemini, NotebookLM, Python, C#, GDScript, Java, JavaScript, HTML/CSS, Lua, SQL, Figma. Motto: take care of your work, and your work will take care of you." width="100%">
 
+<img src="assets/experience.svg" alt="experience.log — work history, newest first. UX/UI Designer Intern, Gumon Technology, Jun to Aug 2026: redesigned MonsTask UI and set up a 121-token design system. Coding Teacher, Code Genius EmQuartier, Feb 2026 to now: Scratch, Micro:bit and Python for primary school students. Head of Game Workshop, ITCAMP 22 KMITL, Apr to May 2026: Unreal Engine 5 curriculum, trained the TA and TD team. Teaching Assistant for Java OOP, School of IT KMITL, Nov 2025 to now: 1-on-1 code feedback for 100+ first-year students. Project Head, Roblox Workshop, IT Openhouse 2025: 2-day Lua workshop, led 10+ TAs for 100+ students. Coding and Math Tutor, Login-Engineering Academy, Sep 2024 to Mar 2026: Godot, math and contest or portfolio projects. Trophies: Top 10 Finalist, Generation Thailand Hackathon 2026 (HybriCareer AI); Business Case competitor, NOSE TEA 2026; NSC 2023 second round (Criminal Minds); NSC 2022 final round (DETEC-CHEAT). Languages: Thai native, English fluent, Japanese beginner." width="100%">
+
 </div>
 
 # Hi ![](https://user-images.githubusercontent.com/18350557/176309783-0785949b-9127-417c-8b55-ab5a4333674e.gif) My name is Thanatpat Promthong
@@ -106,68 +108,6 @@ My interests include **UX/UI Design**, **Product Design**, **Game Development**,
 <img src="https://img.shields.io/badge/Claude-25364A?style=for-the-badge" alt="Claude" />
 <img src="https://img.shields.io/badge/Antigravity-25364A?style=for-the-badge" alt="Antigravity" />
 </p>
-
-### Experience
-
-#### Part-time UX/UI Designer Intern — Gumon Technology
-
-**Jun 2026 – Now**
-
-Working as a part-time UX/UI Designer Intern, focusing on designing clean, usable, and scalable interfaces for digital products and internal systems.
-I contribute to UX/UI design tasks, design system management, component organization, interface improvement, and visual consistency across product screens.
-
-Responsibilities include:
-
-* Designing and improving user interfaces for web-based products
-* Creating and organizing UI components in Figma
-* Supporting design system structure, including colors, typography, components, and usage guidelines
-* Reviewing user flows and interface layouts to improve usability
-* Collaborating with team members to refine product experience and visual design
-* Preparing design assets and component specifications for development handoff
-
-**Tech & Tools:** Figma, Design System, UX/UI Design, Product Design, Component Library, Usability Review
-
----
-
-#### Part-time Teacher — Information Technology
-
-**Code Genius EmQuartier**
-**Feb 22, 2026 – Now**
-
-Teaching technology and coding to primary school students, with a focus on making programming fun, understandable, and practical for young learners.
-I specialize in block-based programming and beginner-friendly coding lessons using Scratch, Micro:bit, and simple Python projects.
-
-Responsibilities include:
-
-* Teaching coding concepts to primary school students
-* Creating interactive lessons using Scratch and Micro:bit
-* Introducing basic Python through educational games and creative coding activities
-* Providing learning feedback based on each student's progress
-* Adjusting class content to match students' needs, skill levels, and learning pace
-* Supporting students in developing logical thinking, creativity, and problem-solving skills
-
-**Tech & Tools:** Scratch, Micro:bit, Python, Educational Games, Computational Thinking
-
----
-
-#### Part-time Tutor — Information Technology
-
-**Login-Engineering Academy**
-**Sep 2024 – Mar 2026**
-
-Tutored students in programming, game development, mathematics, and project-based learning.
-I helped students develop projects for competitions, portfolio submissions, and university preparation.
-
-Responsibilities included:
-
-* Teaching Godot Engine for game development
-* Teaching mathematics to junior high school and senior high school students
-* Guiding students through project planning and development
-* Supporting students in building competition projects and portfolio projects
-* Helping students improve problem-solving, coding logic, and project presentation skills
-* Managing student projects for software contests and university application portfolios
-
-**Tech & Tools:** Godot Engine, GDScript, Math, Game Development, Project Coaching
 
 ### Socials
 
