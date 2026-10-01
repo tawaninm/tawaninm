@@ -6,11 +6,11 @@
 
 <div align="center">
 
-<img src="assets/welcome.svg" alt="welcome.exe — TAWAN-OS. Thanatpat Promthong, aka Tawan. UX/UI Designer, Game Developer, Coding Tutor. IT at KMITL, Multimedia &amp; Game Technology. A terminal line types in turn: designing user-centered interfaces / building games in Godot, Unity, Unreal / teaching kids to code / currently: UX/UI intern at Gumon Technology. Status: online, Bangkok, Thailand." width="100%">
+<img src="assets/welcome.svg" alt="welcome.exe — TAWAN-OS. Thanatpat Promthong, aka Tawan. AI Solution, Coding Tutor, Game Dev, Programmer. IT at KMITL, Multimedia &amp; Game Technology. A terminal line types in turn: building AI solutions and agent tools / teaching kids to code at Code Genius / building games in Godot, Unity, Unreal / programming: AWS serverless, Three.js, CLI. Status: online, Bangkok, Thailand." width="100%">
 
 <a href="https://github.com/tawaninm"><img src="assets/task-start.svg" alt="Start — TAWAN-OS" width="24%"></a> <a href="https://porfolio-website-five-inky.vercel.app/"><img src="assets/task-portfolio.svg" alt="Portfolio website" width="24%"></a> <a href="https://github.com/tawaninm"><img src="assets/task-github.svg" alt="GitHub — tawaninm" width="24%"></a> <a href="mailto:tawaninm13@gmail.com"><img src="assets/task-mail.svg" alt="Email — tawaninm13@gmail.com" width="24%"></a>
 
-<img src="assets/profile.svg" alt="profile.sys — Class: UX/UI Designer and Game Developer. Guild: IT KMITL, Multimedia &amp; Game Tech, year 3. Job: UX/UI Designer Intern at Gumon Technology. Side quest: Coding Teacher at Code Genius EmQuartier. Engine XP: Godot, Unity and Unreal intermediate (3 of 5), Roblox Studio beginner (1 of 5). Inventory: Figma, Illustrator, Canva, C#, GDScript, Java, Python, JavaScript, HTML/CSS, Lua, SQL. Motto: take care of your work, and your work will take care of you." width="100%">
+<img src="assets/profile.svg" alt="profile.sys — Class: AI Solution, Game Dev and Tutor. Guild: IT KMITL, Multimedia &amp; Game Tech, year 3. Job: Coding Teacher at Code Genius EmQuartier. Side quest: AI Solution, Programmer and UX/UI. Engine XP: Godot, Unity and Unreal intermediate (3 of 5), Roblox Studio beginner (1 of 5). Inventory: Claude, ChatGPT, Gemini, NotebookLM, Python, C#, GDScript, Java, JavaScript, HTML/CSS, Lua, SQL, Figma. Motto: take care of your work, and your work will take care of you." width="100%">
 
 </div>
 

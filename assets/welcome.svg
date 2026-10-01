@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 360" width="840" height="360" role="img" aria-labelledby="t d">
   <title id="t">welcome.exe — TAWAN-OS</title>
-  <desc id="d">Thanatpat Promthong (Tawan). UX/UI Designer, Game Developer, Coding Tutor. IT @ KMITL · Multimedia &amp; Game Technology.</desc>
+  <desc id="d">Thanatpat Promthong (Tawan). AI Solution, Coding Tutor, Game Dev, Programmer. IT @ KMITL · Multimedia &amp; Game Technology.</desc>
   <style>
     .twinkle { transform-box: fill-box; transform-origin: center; animation: twinkle 2.4s ease-in-out infinite; }
     .drift { animation: drift 14s ease-in-out infinite alternate; }
@@ -84,28 +84,28 @@
   <text class="glitch" x="38" y="150" font-family="'Trebuchet MS', Verdana, sans-serif" font-size="46" font-weight="700" fill="#88D8E8" stroke="#88D8E8" stroke-width="8" stroke-linejoin="round">Thanatpat Promthong</text>
   <text class="glitch" style="animation-direction:reverse" x="38" y="150" font-family="'Trebuchet MS', Verdana, sans-serif" font-size="46" font-weight="700" fill="#FF6090" stroke="#FF6090" stroke-width="8" stroke-linejoin="round">Thanatpat Promthong</text>
   <text x="38" y="150" font-family="'Trebuchet MS', Verdana, sans-serif" font-size="46" font-weight="700" fill="#FFF8F0" stroke="#2D1B4E" stroke-width="8" stroke-linejoin="round" paint-order="stroke">Thanatpat Promthong</text>
-  <text x="40" y="182" font-family="'Trebuchet MS', Verdana, sans-serif" font-size="18" font-weight="700" fill="#2D1B4E">aka Tawan · UX/UI Designer · Game Developer · Coding Tutor</text>
+  <text x="40" y="182" font-family="'Trebuchet MS', Verdana, sans-serif" font-size="18" font-weight="700" fill="#2D1B4E">aka Tawan · AI Solution · Coding Tutor · Game Dev · Programmer</text>
   <text x="40" y="208" font-family="'Trebuchet MS', Verdana, sans-serif" font-size="15" fill="#2D1B4E">IT @ KMITL · Multimedia &amp; Game Technology</text>
 
   <!-- terminal line -->
   <rect x="34" y="234" width="520" height="34" rx="8" fill="#FFF8F0" stroke="#2D1B4E" stroke-width="2"/>
   
     <clipPath id="type0"><rect x="46" y="240" height="26" width="0">
-      <animate attributeName="width" dur="16s" repeatCount="indefinite" keyTimes="0;0.1125;0.23;0.25;1" values="0;350;350;0;0"/>
+      <animate attributeName="width" dur="16s" repeatCount="indefinite" keyTimes="0;0.1125;0.23;0.25;1" values="0;379;379;0;0"/>
     </rect></clipPath>
-    <text clip-path="url(#type0)" x="46" y="258" font-family="ui-monospace, Consolas, 'Courier New', monospace" font-size="16" fill="#2D1B4E">&gt; designing user-centered interfaces</text>
+    <text clip-path="url(#type0)" x="46" y="258" font-family="ui-monospace, Consolas, 'Courier New', monospace" font-size="16" fill="#2D1B4E">&gt; building AI solutions and agent tools</text>
     <clipPath id="type1"><rect x="46" y="240" height="26" width="0">
-      <animate attributeName="width" dur="16s" repeatCount="indefinite" keyTimes="0;0.25;0.3625;0.48;0.5;1" values="0;0;408;408;0;0"/>
+      <animate attributeName="width" dur="16s" repeatCount="indefinite" keyTimes="0;0.25;0.3625;0.48;0.5;1" values="0;0;360;360;0;0"/>
     </rect></clipPath>
-    <text clip-path="url(#type1)" x="46" y="258" font-family="ui-monospace, Consolas, 'Courier New', monospace" font-size="16" fill="#2D1B4E">&gt; building games in Godot / Unity / Unreal</text>
+    <text clip-path="url(#type1)" x="46" y="258" font-family="ui-monospace, Consolas, 'Courier New', monospace" font-size="16" fill="#2D1B4E">&gt; teaching kids to code @ Code Genius</text>
     <clipPath id="type2"><rect x="46" y="240" height="26" width="0">
-      <animate attributeName="width" dur="16s" repeatCount="indefinite" keyTimes="0;0.5;0.6125;0.73;0.75;1" values="0;0;225;225;0;0"/>
+      <animate attributeName="width" dur="16s" repeatCount="indefinite" keyTimes="0;0.5;0.6125;0.73;0.75;1" values="0;0;408;408;0;0"/>
     </rect></clipPath>
-    <text clip-path="url(#type2)" x="46" y="258" font-family="ui-monospace, Consolas, 'Courier New', monospace" font-size="16" fill="#2D1B4E">&gt; teaching kids to code</text>
+    <text clip-path="url(#type2)" x="46" y="258" font-family="ui-monospace, Consolas, 'Courier New', monospace" font-size="16" fill="#2D1B4E">&gt; building games in Godot / Unity / Unreal</text>
     <clipPath id="type3"><rect x="46" y="240" height="26" width="0">
       <animate attributeName="width" dur="16s" repeatCount="indefinite" keyTimes="0;0.75;0.8625;0.98;1" values="0;0;427;427;0"/>
     </rect></clipPath>
-    <text clip-path="url(#type3)" x="46" y="258" font-family="ui-monospace, Consolas, 'Courier New', monospace" font-size="16" fill="#2D1B4E">&gt; currently: UX/UI intern @ Gumon Technology</text>
+    <text clip-path="url(#type3)" x="46" y="258" font-family="ui-monospace, Consolas, 'Courier New', monospace" font-size="16" fill="#2D1B4E">&gt; programming: AWS serverless, Three.js, CLI</text>
 
   <!-- desktop icons -->
   

@@ -4,21 +4,21 @@
 export const profile = {
   name: "Thanatpat Promthong",
   nickname: "Tawan",
-  roles: ["UX/UI Designer", "Game Developer", "Coding Tutor"],
+  roles: ["AI Solution", "Coding Tutor", "Game Dev", "Programmer"],
   school: "IT @ KMITL · Multimedia & Game Technology",
   location: "Bangkok, TH",
   typewriter: [
-    "designing user-centered interfaces",
+    "building AI solutions and agent tools",
+    "teaching kids to code @ Code Genius",
     "building games in Godot / Unity / Unreal",
-    "teaching kids to code",
-    "currently: UX/UI intern @ Gumon Technology",
+    "programming: AWS serverless, Three.js, CLI",
   ],
   // profile.sys — rows shown next to the avatar
   stats: [
-    ["CLASS", "UX/UI Designer + Game Developer"],
+    ["CLASS", "AI Solution + Game Dev + Tutor"],
     ["GUILD", "IT KMITL · Multimedia & Game Tech · Year 3"],
-    ["JOB", "UX/UI Designer Intern @ Gumon Technology"],
-    ["SIDE QUEST", "Coding Teacher @ Code Genius EmQuartier"],
+    ["JOB", "Coding Teacher @ Code Genius EmQuartier"],
+    ["SIDE QUEST", "AI Solution + Programmer + UX/UI"],
   ],
   // Levels are the ones stated on the portfolio: 3 = Intermediate, 1 = Beginner (out of 5).
   engines: [
@@ -27,7 +27,7 @@ export const profile = {
     ["Unreal", 3, "Intermediate"],
     ["Roblox Studio", 1, "Beginner"],
   ],
-  inventory: ["Figma", "Illustrator", "Canva", "C#", "GDScript", "Java", "Python", "JavaScript", "HTML/CSS", "Lua", "SQL"],
+  inventory: ["Claude", "ChatGPT", "Gemini", "NotebookLM", "Python", "C#", "GDScript", "Java", "JavaScript", "HTML/CSS", "Lua", "SQL", "Figma"],
   motto: "take care of your work, and your work will take care of you.",
   links: {
     profile: "https://github.com/tawaninm",
