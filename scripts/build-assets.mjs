@@ -511,6 +511,76 @@ function galleryCard([slug, file, title, year, category], i) {
 `;
 }
 
+// ---------- footer ----------
+
+function footerCard() {
+  const W = 840;
+  const H = 176;
+  const pw = W - 28;
+  const ph = H - 28;
+  const barY = FX + ph - 46;
+  const apps = ["welcome.exe", "profile.sys", "experience.log", "projects.folder", "stats.exe"];
+  let tx = 160;
+  const tabs = apps
+    .map((name) => {
+      const w = Math.ceil(name.length * 6.7) + 20;
+      const out = `<rect x="${tx}" y="${barY + 11}" width="${w}" height="24" rx="6" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/><text x="${tx + w / 2}" y="${barY + 27}" text-anchor="middle" font-family="${MONO}" font-size="11" fill="${c.ink}">${name}</text>`;
+      tx += w + 6;
+      return out;
+    })
+    .join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t">
+  <title id="t">Thanks for visiting TAWAN-OS — see you in the next update.</title>
+  <style>${MOTION_CSS}
+    .beat { transform-box: fill-box; transform-origin: center; animation: beat 1.4s ease-in-out infinite; }
+    @keyframes beat { 0%, 100% { transform: scale(1) } 15% { transform: scale(1.25) } 30% { transform: scale(1) } 45% { transform: scale(1.15) } }
+    @media (prefers-reduced-motion: reduce) { .beat { animation: none !important } }
+  </style>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${c.lavender}"/>
+      <stop offset=".5" stop-color="${c.sakura}"/>
+      <stop offset="1" stop-color="${c.sky}"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="${c.titleA}"/>
+      <stop offset="1" stop-color="${c.titleB}"/>
+    </linearGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect x="7" y="7" width="2" height="2" fill="#FFFFFF" opacity=".45"/>
+    </pattern>
+    <clipPath id="panel"><rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14"/></clipPath>
+  </defs>
+  <rect x="${FX + 8}" y="${FX + 8}" width="${pw}" height="${ph}" rx="14" fill="${c.ink}"/>
+  <rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14" fill="url(#sky)"/>
+  <rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14" fill="url(#dots)"/>
+  <g clip-path="url(#panel)">
+    ${bokeh([[620, 60, 70, 1], [760, 110, 50, 5]])}
+    ${risers([300, 420, 520, 640, 720, 790], barY - 4, ["#FFFFFF", c.gold])}
+    <g class="bob">
+      ${pixels(AVATAR, AVATAR_COLORS, 36, FX + 6, 2)}
+    </g>
+  </g>
+  <text x="120" y="60" font-family="${SANS}" font-size="26" font-weight="700" fill="${c.paper}" stroke="${c.ink}" stroke-width="7" stroke-linejoin="round" paint-order="stroke">thanks for visiting ♥</text>
+  <text x="122" y="86" font-family="${MONO}" font-size="13" fill="${c.ink}">see you in the next update of TAWAN-OS ~</text>
+  ${sparkle(470, 44, 9, "#FFFFFF", 0)}
+  ${sparkle(560, 78, 6, c.gold, 0.9)}
+  ${heartBubble(500, 18, 3, 0.6)}
+  <!-- taskbar -->
+  <path d="M${FX} ${barY} h${pw} v${ph - (barY - FX) - 14} a14 14 0 0 1 -14 14 h-${pw - 28} a14 14 0 0 1 -14 -14 z" fill="url(#bar)"/>
+  <line x1="${FX}" y1="${barY}" x2="${FX + pw}" y2="${barY}" stroke="${c.ink}" stroke-width="3"/>
+  <rect x="24" y="${barY + 8}" width="124" height="30" rx="15" fill="${c.mint}" stroke="${c.ink}" stroke-width="2"/>
+  ${pixels(ICONS.heart, ICON_COLORS, 34, barY + 14, 2)}
+  <text x="60" y="${barY + 28}" font-family="${SANS}" font-size="15" font-weight="700" fill="${c.ink}">TAWAN-OS</text>
+  ${tabs}
+  <rect x="${FX + pw - 104}" y="${barY + 9}" width="90" height="28" rx="6" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/>
+  <g class="beat">${pixels(ICONS.heart, ICON_COLORS, FX + pw - 96, barY + 14, 2)}</g>
+  <text x="${FX + pw - 70}" y="${barY + 28}" font-family="${MONO}" font-size="12" fill="${c.ink}">11:11</text>
+  <rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14" fill="none" stroke="${c.ink}" stroke-width="3"/>
+</svg>
+`;
+}
+
 // ---------- taskbar buttons ----------
 
 function taskButton({ label, icon, fill, title }) {
@@ -532,6 +602,8 @@ const buttons = [
   { file: "task-portfolio.svg", label: "Portfolio", icon: "window", fill: c.sakura, title: "Portfolio website" },
   { file: "task-github.svg", label: "GitHub", icon: "code", fill: c.lavender, title: "GitHub — tawaninm" },
   { file: "task-mail.svg", label: "Mail", icon: "mail", fill: c.sky, title: "Email — tawaninm13@gmail.com" },
+  { file: "task-facebook.svg", label: "Facebook", icon: "facebook", fill: c.sky, title: "Facebook — Thanatpat Promthong" },
+  { file: "task-instagram.svg", label: "Instagram", icon: "instagram", fill: c.sakura, title: "Instagram — towo_tawan" },
 ];
 
 // ---------- contrast gate ----------
@@ -569,6 +641,7 @@ writeFileSync(join(outDir, "welcome.svg"), welcome());
 writeFileSync(join(outDir, "profile.svg"), profileCard());
 writeFileSync(join(outDir, "experience.svg"), experienceCard());
 writeFileSync(join(outDir, "projects.svg"), projectsCard());
+writeFileSync(join(outDir, "footer.svg"), footerCard());
 profile.gallery.forEach((g, i) => writeFileSync(join(outDir, `gallery-${g[0]}.svg`), galleryCard(g, i)));
 for (const b of buttons) writeFileSync(join(outDir, b.file), taskButton(b));
-console.log(`wrote ${4 + profile.gallery.length + buttons.length} files to assets/`);
+console.log(`wrote ${5 + profile.gallery.length + buttons.length} files to assets/`);

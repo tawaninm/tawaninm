@@ -105,6 +105,8 @@ export const profile = {
     github: "https://github.com/tawaninm",
     mail: "mailto:tawaninm13@gmail.com",
     projects: "https://porfolio-website-five-inky.vercel.app/projects",
+    facebook: "https://www.facebook.com/thanatthapat.promthong",
+    instagram: "https://www.instagram.com/towo_tawan",
   },
 };
 
