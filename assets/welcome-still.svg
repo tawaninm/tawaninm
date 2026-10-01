@@ -2,6 +2,8 @@
   <title id="t">welcome.exe — TAWAN-OS</title>
   <desc id="d">Thanatpat Promthong (Tawan). AI Solution, Coding Tutor, Game Dev, Programmer. IT @ KMITL · Multimedia &amp; Game Technology.</desc>
   <style>
+    * { animation: none !important; }
+    .glitch, .logo-glitch, .blink, .boot { opacity: 0 !important; }
     .twinkle { transform-box: fill-box; transform-origin: center; animation: twinkle 2.4s ease-in-out infinite; }
     .drift { animation: drift 14s ease-in-out infinite alternate; }
     .drift2 { animation: drift 18s ease-in-out infinite alternate-reverse; }
@@ -104,20 +106,20 @@
   <!-- terminal line -->
   <rect x="34" y="234" width="520" height="34" rx="8" fill="#FFF8F0" stroke="#2D1B4E" stroke-width="2"/>
   
-    <clipPath id="type0"><rect x="46" y="240" height="26" width="0">
-      <animate attributeName="width" dur="16s" repeatCount="indefinite" keyTimes="0;0.1125;0.23;0.25;1" values="0;379;379;0;0"/>
+    <clipPath id="type0"><rect x="46" y="240" height="26" width="600">
+      
     </rect></clipPath>
     <text clip-path="url(#type0)" x="46" y="258" font-family="ui-monospace, Consolas, 'Courier New', monospace" font-size="16" fill="#2D1B4E">&gt; building AI solutions and agent tools</text>
     <clipPath id="type1"><rect x="46" y="240" height="26" width="0">
-      <animate attributeName="width" dur="16s" repeatCount="indefinite" keyTimes="0;0.25;0.3625;0.48;0.5;1" values="0;0;360;360;0;0"/>
+      
     </rect></clipPath>
     <text clip-path="url(#type1)" x="46" y="258" font-family="ui-monospace, Consolas, 'Courier New', monospace" font-size="16" fill="#2D1B4E">&gt; teaching kids to code @ Code Genius</text>
     <clipPath id="type2"><rect x="46" y="240" height="26" width="0">
-      <animate attributeName="width" dur="16s" repeatCount="indefinite" keyTimes="0;0.5;0.6125;0.73;0.75;1" values="0;0;408;408;0;0"/>
+      
     </rect></clipPath>
     <text clip-path="url(#type2)" x="46" y="258" font-family="ui-monospace, Consolas, 'Courier New', monospace" font-size="16" fill="#2D1B4E">&gt; building games in Godot / Unity / Unreal</text>
     <clipPath id="type3"><rect x="46" y="240" height="26" width="0">
-      <animate attributeName="width" dur="16s" repeatCount="indefinite" keyTimes="0;0.75;0.8625;0.98;1" values="0;0;427;427;0"/>
+      
     </rect></clipPath>
     <text clip-path="url(#type3)" x="46" y="258" font-family="ui-monospace, Consolas, 'Courier New', monospace" font-size="16" fill="#2D1B4E">&gt; programming: AWS serverless, Three.js, CLI</text>
 

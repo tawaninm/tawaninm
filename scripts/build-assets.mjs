@@ -1,282 +1,39 @@
 // Generates the TAWAN-OS README cards as SVG files in assets/.
 // Standard library only. Run from the repo root:  node scripts/build-assets.mjs
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { profile, palette as c } from "./profile.mjs";
 import { AVATAR, AVATAR_COLORS, AVATAR_EYES, AVATAR_W, AVATAR_H } from "./avatar.mjs";
+import {
+  SANS,
+  MONO,
+  esc,
+  pixels,
+  sparkle,
+  luminance,
+  contrast,
+  ICONS,
+  ICON_COLORS,
+  CLOUD,
+  FX,
+  BAR,
+  windowChrome,
+  MOTION_CSS,
+  bokeh,
+  risers,
+  crt,
+  BUBBLE,
+  heartBubble,
+  CHIP_FILLS,
+  MONO12_W,
+  wrap,
+  still,
+} from "./lib/svg.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = join(root, "assets");
-
-const SANS = `'Trebuchet MS', Verdana, sans-serif`;
-const MONO = `ui-monospace, Consolas, 'Courier New', monospace`;
-
-// ---------- helpers ----------
-
-const esc = (s) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-
-// Draws a bitmap (array of strings) as pixel rects. `colors` maps a char to a fill; "." is empty.
-function pixels(bitmap, colors, x, y, size) {
-  const out = [];
-  bitmap.forEach((row, r) => {
-    [...row].forEach((ch, col) => {
-      if (colors[ch]) {
-        out.push(`<rect x="${x + col * size}" y="${y + r * size}" width="${size}" height="${size}" fill="${colors[ch]}"/>`);
-      }
-    });
-  });
-  return `<g shape-rendering="crispEdges">${out.join("")}</g>`;
-}
-
-// 4-point sparkle centred on (x, y).
-function sparkle(x, y, r, fill, delay) {
-  const k = r * 0.28;
-  const d = `M${x} ${y - r} L${x + k} ${y - k} L${x + r} ${y} L${x + k} ${y + k} L${x} ${y + r} L${x - k} ${y + k} L${x - r} ${y} L${x - k} ${y - k}Z`;
-  return `<path class="twinkle" style="animation-delay:${delay}s" d="${d}" fill="${fill}" stroke="${c.ink}" stroke-width="1.5" stroke-linejoin="round"/>`;
-}
-
-// WCAG 2.x contrast ratio.
-function luminance(hex) {
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
-  const lin = (v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
-  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-}
-function contrast(a, b) {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (hi + 0.05) / (lo + 0.05);
-}
-
-// ---------- pixel art ----------
-
-const ICONS = {
-  folder: [
-    ".ooo......",
-    "oyyyo.....",
-    "oyyyyoooo.",
-    "oyyyyyyyyo",
-    "oYYYYYYYYo",
-    "oYYYYYYYYo",
-    "oYYYYYYYYo",
-    "oYYYYYYYYo",
-    ".oooooooo.",
-  ],
-  heart: [
-    ".oo...oo..",
-    "oppo.oppo.",
-    "opwppppppo",
-    "opppppppPo",
-    "oppppppPPo",
-    ".oppppPPo.",
-    "..oppPPo..",
-    "...oPPo...",
-    "....oo....",
-  ],
-  star: [
-    "....oo....",
-    "...oyyo...",
-    "oooyyyyooo",
-    "oyyyyyyYYo",
-    ".oyyyyYYo.",
-    "..oyyyYo..",
-    ".oyYooYYo.",
-    "oYYo..oYYo",
-    "ooo....ooo",
-  ],
-  window: [
-    "oooooooooo",
-    "obbbbbbwbo",
-    "oooooooooo",
-    "owwwwwwwwo",
-    "owppwwssso",
-    "owppwwwwwo",
-    "owwwwssswo",
-    "owwwwwwwwo",
-    "oooooooooo",
-  ],
-  mail: [
-    "oooooooooo",
-    "oowwwwwwoo",
-    "owowwwwowo",
-    "owwowwowwo",
-    "owwwoowwwo",
-    "owwwwwwwwo",
-    "owwwwwwppo",
-    "owwwwwwwwo",
-    "oooooooooo",
-  ],
-  code: [
-    "..........",
-    "..o....o..",
-    ".oo....oo.",
-    "oo..o...oo",
-    "o...o....o",
-    "oo..o...oo",
-    ".oo.o..oo.",
-    "..o....o..",
-    "..........",
-  ],
-  sun: [
-    "...oooo...",
-    ".ooyyyyoo.",
-    ".oyywyyyo.",
-    "oyywyyyyYo",
-    "oyyyyyyyYo",
-    "oyyyyyyYYo",
-    ".oyyyyYYo.",
-    ".ooYYYYoo.",
-    "...oooo...",
-  ],
-};
-
-const ICON_COLORS = {
-  o: c.ink,
-  y: c.gold,
-  Y: "#F0C860",
-  p: c.sakura,
-  P: c.hotPink,
-  w: "#FFFFFF",
-  b: c.electric,
-  s: c.sky,
-};
-
-const CLOUD = [
-  "....oooo......",
-  "...owwwwo.oo..",
-  ".ooowwwwwowwo.",
-  "owwwwwwwwwwwwo",
-  "owwwwwwwwwwsso",
-  ".oooooooooooo.",
-];
-
-// ---------- window chrome (shared by every card) ----------
-
-const FX = 10; // frame inset leaves room for the offset shadow
-const BAR = 42;
-
-// Returns the pieces of an app window: `defs` for <defs>, `back` to draw first
-// (shadow + body fill), `front` to draw last (title bar + outline).
-function windowChrome(W, H, title, icon, bodyFill) {
-  const fw = W - FX * 2 - 8;
-  const fh = H - FX * 2 - 8;
-  const defs = `
-    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="${c.titleA}"/>
-      <stop offset="1" stop-color="${c.titleB}"/>
-    </linearGradient>
-    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
-      <rect x="7" y="7" width="2" height="2" fill="#FFFFFF" opacity=".45"/>
-    </pattern>
-    <clipPath id="body"><rect x="${FX}" y="${FX + BAR}" width="${fw}" height="${fh - BAR}"/></clipPath>`;
-  const back = `
-  <rect x="${FX + 8}" y="${FX + 8}" width="${fw}" height="${fh}" rx="14" fill="${c.ink}"/>
-  <rect x="${FX}" y="${FX}" width="${fw}" height="${fh}" rx="14" fill="${bodyFill}"/>
-  <rect x="${FX}" y="${FX + BAR}" width="${fw}" height="${fh - BAR}" fill="url(#dots)"/>`;
-  const buttons = ["_", "□", "×"]
-    .map((g, i) => {
-      const bx = FX + fw - 110 + i * 34;
-      return `<rect x="${bx}" y="${FX + 9}" width="26" height="24" rx="5" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/><text x="${bx + 13}" y="${FX + 26}" text-anchor="middle" font-family="${MONO}" font-size="15" font-weight="700" fill="${c.ink}">${g}</text>`;
-    })
-    .join("");
-  const front = `
-  <path d="M${FX} ${FX + 14} a14 14 0 0 1 14 -14 h${fw - 28} a14 14 0 0 1 14 14 v${BAR - 14} h-${fw} z" fill="url(#bar)"/>
-  <line x1="${FX}" y1="${FX + BAR}" x2="${FX + fw}" y2="${FX + BAR}" stroke="${c.ink}" stroke-width="3"/>
-  ${pixels(ICONS[icon], ICON_COLORS, FX + 14, FX + 12, 2)}
-  <text x="${FX + 42}" y="${FX + 27}" font-family="${MONO}" font-size="15" font-weight="700" fill="${c.paper}">${esc(title)}</text>
-  ${buttons}
-  <rect x="${FX}" y="${FX}" width="${fw}" height="${fh}" rx="14" fill="none" stroke="${c.ink}" stroke-width="3"/>`;
-  return { defs, back, front, fw, fh };
-}
-
-// ---------- motion (shared by every card) ----------
-
-// One stylesheet for all cards. Everything stops under prefers-reduced-motion;
-// each element's resting state is a sensible static frame.
-const MOTION_CSS = `
-    .twinkle { transform-box: fill-box; transform-origin: center; animation: twinkle 2.4s ease-in-out infinite; }
-    .drift { animation: drift 14s ease-in-out infinite alternate; }
-    .drift2 { animation: drift 18s ease-in-out infinite alternate-reverse; }
-    .bokeh { transform-box: fill-box; transform-origin: center; animation: bokeh 11s ease-in-out infinite alternate; }
-    .rise { transform-box: fill-box; transform-origin: center; animation: rise 7s linear infinite both; }
-    .sweep { animation: sweep 5s linear infinite; }
-    .pop { transform-box: fill-box; transform-origin: 20% 100%; animation: pop 5s ease-out infinite both; }
-    .glitch { opacity: 0; animation: glitch 6s steps(1) infinite; }
-    .bob { animation: bob 3s ease-in-out infinite; }
-    .blink { opacity: 0; animation: blink 4s steps(1) infinite; }
-    .charge { animation: charge 6s ease-out infinite both; }
-    @keyframes twinkle { 0%,100% { transform: scale(1); opacity: 1 } 50% { transform: scale(.55); opacity: .6 } }
-    @keyframes drift { from { transform: translateX(0) } to { transform: translateX(40px) } }
-    @keyframes bokeh { from { transform: translate(0,0) scale(1) } to { transform: translate(24px,-18px) scale(1.12) } }
-    @keyframes rise { 0% { transform: translateY(0) scale(.6); opacity: 0 } 15% { opacity: 1 } 80% { opacity: 1 } 100% { transform: translateY(-240px) scale(1.1); opacity: 0 } }
-    @keyframes sweep { from { transform: translateY(0) } to { transform: translateY(340px) } }
-    @keyframes pop { 0%,55% { transform: scale(0) } 62% { transform: scale(1.18) } 68%,92% { transform: scale(1) } 100% { transform: scale(0) } }
-    @keyframes glitch { 0% { opacity: 0 } 90% { opacity: .95; transform: translateX(-4px) } 92% { opacity: 0 } 94% { opacity: .95; transform: translateX(3px) } 96% { opacity: 0 } }
-    @keyframes bob { 50% { transform: translateY(-5px) } }
-    @keyframes blink { 0% { opacity: 0 } 92% { opacity: 1 } 95% { opacity: 0 } }
-    @keyframes charge { 0% { opacity: 0 } 12% { opacity: 1 } 88% { opacity: 1 } 100% { opacity: 0 } }
-    @media (prefers-reduced-motion: reduce) {
-      * { animation: none !important; }
-      .glitch, .blink { opacity: 0; }
-    }`;
-
-// Soft out-of-focus circles drifting behind the content.
-function bokeh(circles) {
-  return circles
-    .map(([x, y, r, d]) => `<circle class="bokeh" style="animation-delay:-${d}s" cx="${x}" cy="${y}" r="${r}" fill="#FFFFFF" opacity=".22"/>`)
-    .join("");
-}
-
-// Small sparkles that float up from `baseY` and fade, staggered.
-function risers(xs, baseY, colors) {
-  return xs
-    .map((x, i) => {
-      const r = 3 + (i % 3);
-      const k = r * 0.3;
-      const y = baseY + (i % 4) * 8;
-      const d = `M${x} ${y - r} L${x + k} ${y - k} L${x + r} ${y} L${x + k} ${y + k} L${x} ${y + r} L${x - k} ${y + k} L${x - r} ${y} L${x - k} ${y - k}Z`;
-      return `<path class="rise" style="animation-delay:${(i * 0.83) % 7}s;animation-duration:${6 + (i % 3)}s" d="${d}" fill="${colors[i % colors.length]}"/>`;
-    })
-    .join("");
-}
-
-// CRT overlay: faint scanlines plus a bright band sweeping down.
-// Returns `defs` for <defs> and `layer` to draw on top of the content.
-function crt(x, y, w, h) {
-  const defs = `
-    <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1" fill="${c.ink}" opacity=".06"/></pattern>
-    <linearGradient id="band" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
-      <stop offset=".5" stop-color="#FFFFFF" stop-opacity=".28"/>
-      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
-    </linearGradient>`;
-  const layer = `
-  <g clip-path="url(#body)">
-    <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#scan)"/>
-    <rect class="sweep" x="${x}" y="${y - 40}" width="${w}" height="40" fill="url(#band)"/>
-  </g>`;
-  return { defs, layer };
-}
-
-const BUBBLE = [
-  ".ooooooooo.",
-  "owwwwwwwwwo",
-  "owwPPwPPwwo",
-  "owPPPPPPPwo",
-  "owPPPPPPPwo",
-  "owwPPPPPwwo",
-  "owwwPPPwwwo",
-  "owwwwPwwwwo",
-  ".oowoooooo.",
-  "..ow.......",
-  "..o........",
-];
-
-// Pixel speech bubble with a heart that pops in, holds, and shrinks away.
-function heartBubble(x, y, size, delay) {
-  return `<g class="pop" style="animation-delay:${delay}s">${pixels(BUBBLE, { o: c.ink, w: "#FFFFFF", P: c.hotPink }, x, y, size)}</g>`;
-}
 
 // ---------- welcome.svg ----------
 
@@ -395,8 +152,6 @@ function welcome() {
 
 // ---------- profile.sys ----------
 
-const CHIP_FILLS = [c.sakura, c.sky, c.mint, c.lavender, c.gold];
-const MONO12_W = 7.3; // approx advance of a 12px monospace glyph
 
 function profileCard() {
   const W = 840;
@@ -451,7 +206,9 @@ function profileCard() {
         const sx = x + 128 + s * 24;
         const base = `<rect x="${sx}" y="${y - 12}" width="20" height="14" rx="2" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/>`;
         return on
-          ? base + `<rect class="charge" style="animation-delay:${(s * 0.25 + i * 0.1).toFixed(2)}s" x="${sx}" y="${y - 12}" width="20" height="14" rx="2" fill="${c.titleB}" stroke="${c.ink}" stroke-width="1.5"/>`
+          ? base +
+            `<rect x="${sx}" y="${y - 12}" width="20" height="14" rx="2" fill="${c.titleB}" stroke="${c.ink}" stroke-width="1.5"/>` +
+            `<rect class="glint" style="animation-delay:${(s * 0.25 + i * 0.1).toFixed(2)}s" x="${sx + 2}" y="${y - 10}" width="16" height="10" rx="1" fill="#FFFFFF" opacity="0"/>`
           : base;
       }).join("");
       return `
@@ -517,6 +274,483 @@ function profileCard() {
 `;
 }
 
+// ---------- experience.log ----------
+
+function experienceCard() {
+  const W = 840;
+  const H = 132 + profile.experience.length * 68; // header + bubbles + input bar
+  const { defs, back, front, fw, fh } = windowChrome(W, H, "experience.log", "code", c.paper);
+  const bottom = FX + fh;
+
+  // chat bubbles, newest first
+  const bubbles = profile.experience
+    .map(([icon, role, org, dates, current, note], i) => {
+      const y = 66 + i * 68;
+      const fill = CHIP_FILLS[i % CHIP_FILLS.length];
+      const chipW = Math.ceil(dates.length * 6.7) + 16;
+      const chipX = 556 - chipW;
+      return `
+  <g>
+    <g class="nudge" style="animation-delay:${(i * 0.25).toFixed(2)}s">
+      <rect x="30" y="${y + 6}" width="40" height="40" rx="10" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/>
+      ${pixels(ICONS[icon], ICON_COLORS, 35, y + 13, 3)}
+    </g>
+    <path d="M78 ${y + 20} l-8 6 l8 4 z" fill="${fill}" stroke="${c.ink}" stroke-width="2" stroke-linejoin="round"/>
+    <rect x="78" y="${y}" width="486" height="60" rx="12" fill="${fill}" stroke="${c.ink}" stroke-width="2"/>
+    <rect x="76" y="${y + 21}" width="4" height="8" fill="${fill}"/>
+    <text x="92" y="${y + 21}" font-family="${SANS}" font-size="15" font-weight="700" fill="${c.ink}">${esc(role)}</text>
+    <text x="92" y="${y + 37}" font-family="${MONO}" font-size="11" fill="${c.ink}">${esc(org)}</text>
+    <text x="92" y="${y + 53}" font-family="${SANS}" font-size="12.5" fill="${c.ink}">${esc(note)}</text>
+    <rect x="${chipX}" y="${y + 8}" width="${chipW}" height="18" rx="9" fill="${current ? c.titleB : c.paper}" stroke="${c.ink}" stroke-width="1.5"/>
+    <text x="${chipX + chipW / 2}" y="${y + 21}" text-anchor="middle" font-family="${MONO}" font-size="11" fill="${current ? c.paper : c.ink}">${esc(dates)}</text>
+  </g>`;
+    })
+    .join("");
+
+  // input bar with a typing indicator
+  const barY = bottom - 44;
+  const input = `
+  <rect x="30" y="${barY}" width="534" height="30" rx="15" fill="#FFFFFF" stroke="${c.ink}" stroke-width="2"/>
+  <text x="48" y="${barY + 20}" font-family="${MONO}" font-size="12" fill="${c.ink}">tawan is typing</text>
+  ${[0, 1, 2].map((d) => `<circle class="dot" style="animation-delay:${d * 0.15}s" cx="${172 + d * 10}" cy="${barY + 16}" r="3" fill="${c.titleB}"/>`).join("")}
+  <rect x="482" y="${barY + 4}" width="76" height="22" rx="11" fill="${c.titleB}" stroke="${c.ink}" stroke-width="1.5"/>
+  <text x="520" y="${barY + 19}" text-anchor="middle" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.paper}">SEND</text>`;
+
+  // trophies sidebar
+  const sx = 586;
+  const sw = 226;
+  const trophies = profile.achievements
+    .map(([title, detail, year], j) => {
+      const y = 98 + j * 76;
+      const lines = wrap(detail, 32);
+      return `
+  <rect x="${sx}" y="${y}" width="${sw}" height="68" rx="10" fill="${CHIP_FILLS[(j + 2) % CHIP_FILLS.length]}" stroke="${c.ink}" stroke-width="2"/>
+  ${pixels(ICONS.trophy, ICON_COLORS, sx + 10, y + 9, 2)}
+  <text x="${sx + 36}" y="${y + 22}" font-family="${MONO}" font-size="13" font-weight="700" fill="${c.ink}">${esc(title)}</text>
+  <text x="${sx + sw - 10}" y="${y + 22}" text-anchor="end" font-family="${MONO}" font-size="11" fill="${c.ink}">${year}</text>
+  ${lines.map((l, k) => `<text x="${sx + 12}" y="${y + 41 + k * 15}" font-family="${SANS}" font-size="12" fill="${c.ink}">${esc(l)}</text>`).join("")}`;
+    })
+    .join("");
+
+  // languages (levels from the resume, rounded to 5 segments)
+  const langY = 98 + profile.achievements.length * 76 + 8;
+  const langs = profile.languages
+    .map(([lang, level, label], k) => {
+      const y = langY + 26 + k * 22;
+      const segs = Array.from({ length: 5 }, (_, s) => `<rect x="${sx + 84 + s * 15}" y="${y - 10}" width="12" height="11" rx="2" fill="${s < level ? c.titleB : c.paper}" stroke="${c.ink}" stroke-width="1.2"/>`).join("");
+      return `<text x="${sx + 4}" y="${y}" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.ink}">${esc(lang)}</text>${segs}<text x="${sx + 166}" y="${y}" font-family="${MONO}" font-size="10" fill="${c.ink}">${esc(label)}</text>`;
+    })
+    .join("");
+
+  // workshops attended, under the languages
+  const shopY = langY + 26 + profile.languages.length * 22 + 14;
+  const workshops = profile.workshops
+    .map(([title, detail], k) => {
+      const y = shopY + 12 + k * 52;
+      return `
+  <rect x="${sx}" y="${y}" width="${sw}" height="44" rx="10" fill="${CHIP_FILLS[(k + 1) % CHIP_FILLS.length]}" stroke="${c.ink}" stroke-width="2"/>
+  <text x="${sx + 12}" y="${y + 18}" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.ink}">${esc(title)}</text>
+  <text x="${sx + 12}" y="${y + 35}" font-family="${SANS}" font-size="11.5" fill="${c.ink}">${esc(detail)}</text>`;
+    })
+    .join("");
+
+  const heading = (x, y, text) =>
+    `<rect x="${x}" y="${y - 15}" width="${Math.ceil(text.length * MONO12_W) + 20}" height="20" rx="4" fill="${c.ink}"/><text x="${x + 10}" y="${y}" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.paper}">${esc(text)}</text>`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t d">
+  <title id="t">experience.log — TAWAN-OS</title>
+  <desc id="d">${esc(
+    `Work history: ${profile.experience.map(([, r, o, d, , n]) => `${r}, ${o}, ${d}: ${n}`).join(". ")}. Trophies: ${profile.achievements
+      .map(([t, d, y]) => `${t}, ${d}, ${y}`)
+      .join(". ")}. Languages: ${profile.languages.map(([l, , lab]) => `${l} ${lab}`).join(", ")}. Workshops: ${profile.workshops
+      .map(([t, d]) => `${t}, ${d}`)
+      .join(". ")}.`
+  )}</desc>
+  <style>${MOTION_CSS}
+  </style>
+  <defs>${defs}
+  </defs>
+  ${back}
+  <line x1="574" y1="${FX + BAR + 12}" x2="574" y2="${bottom - 12}" stroke="${c.lavender}" stroke-width="2" stroke-dasharray="4 4"/>
+  ${bubbles}
+  ${input}
+  ${heading(sx, 84, "TROPHIES")}
+  ${sparkle(sx + sw - 14, 72, 7, c.gold, 0.2)}
+  ${trophies}
+  ${heading(sx, langY + 6, "LANGUAGES")}
+  ${langs}
+  ${heading(sx, shopY, "WORKSHOPS")}
+  ${workshops}
+  ${front}
+</svg>
+`;
+}
+
+// ---------- projects.folder ----------
+
+function projectsCard() {
+  const W = 840;
+  const panelW = 386;
+  const itemH = 56;
+  const head = 34;
+  const rows = [0, 2].map((i) => Math.max(profile.projects[i][2].length, profile.projects[i + 1][2].length));
+  const panelH = rows.map((n) => head + 8 + n * itemH);
+  const top = 66;
+  const gap = 14;
+  const H = top + panelH[0] + gap + panelH[1] + 56 + 18;
+  const { defs, back, front, fh } = windowChrome(W, H, "projects.folder", "folder", c.paper);
+  const bottom = FX + fh;
+  const total = profile.projects.reduce((n, [, , items]) => n + items.length, 0);
+
+  let order = 0;
+  const panels = profile.projects
+    .map(([name, icon, items], k) => {
+      const x = 30 + (k % 2) * (panelW + 14);
+      const y = k < 2 ? top : top + panelH[0] + gap;
+      const h = panelH[k < 2 ? 0 : 1];
+      const fill = CHIP_FILLS[k % CHIP_FILLS.length];
+      const files = items
+        .map(([title, year, stack, note], j) => {
+          const iy = y + head + 8 + j * itemH;
+          const delay = (order++ * 0.2).toFixed(2);
+          return `
+    <g>
+      <g class="nudge" style="animation-delay:${delay}s">${pixels(ICONS.doc, ICON_COLORS, x + 14, iy + 6, 3)}</g>
+      <text x="${x + 44}" y="${iy + 16}" font-family="${SANS}" font-size="14" font-weight="700" fill="${c.ink}">${esc(title)}</text>
+      <text x="${x + panelW - 12}" y="${iy + 16}" text-anchor="end" font-family="${MONO}" font-size="11" fill="${c.ink}">${year}</text>
+      <text x="${x + 44}" y="${iy + 31}" font-family="${MONO}" font-size="10.5" fill="${c.ink}">${esc(stack)}</text>
+      <text x="${x + 44}" y="${iy + 46}" font-family="${SANS}" font-size="12" fill="${c.ink}">${esc(note)}</text>
+      ${j < items.length - 1 ? `<line x1="${x + 12}" y1="${iy + itemH - 2}" x2="${x + panelW - 12}" y2="${iy + itemH - 2}" stroke="${c.lavender}" stroke-width="1.5" stroke-dasharray="4 4"/>` : ""}
+    </g>`;
+        })
+        .join("");
+      return `
+  <rect x="${x}" y="${y}" width="${panelW}" height="${h}" rx="10" fill="#FFFFFF" stroke="${c.ink}" stroke-width="2"/>
+  <path d="M${x} ${y + 10} a10 10 0 0 1 10 -10 h${panelW - 20} a10 10 0 0 1 10 10 v${head - 10} h-${panelW} z" fill="${fill}"/>
+  <line x1="${x}" y1="${y + head}" x2="${x + panelW}" y2="${y + head}" stroke="${c.ink}" stroke-width="2"/>
+  <rect x="${x}" y="${y}" width="${panelW}" height="${h}" rx="10" fill="none" stroke="${c.ink}" stroke-width="2"/>
+  ${pixels(ICONS[icon], ICON_COLORS, x + 10, y + 8, 2)}
+  <text x="${x + 38}" y="${y + 22}" font-family="${MONO}" font-size="14" font-weight="700" fill="${c.ink}">${esc(name)}</text>
+  <rect x="${x + panelW - 74}" y="${y + 8}" width="62" height="18" rx="9" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/>
+  <text x="${x + panelW - 43}" y="${y + 21}" text-anchor="middle" font-family="${MONO}" font-size="11" fill="${c.ink}">${items.length} ${items.length === 1 ? "file" : "files"}</text>
+  ${files}`;
+    })
+    .join("");
+
+  // cursor hops between the four folder headers (empty space right of the name)
+  const hop = (k) => `translate(${30 + (k % 2) * (panelW + 14) + 230}px, ${(k < 2 ? top : top + panelH[0] + gap) + 4}px)`;
+  const cursorPath = [0, 1, 3, 2].map((k, i) => `--p${i + 1}:${hop(k)}`).join(";");
+
+  // status bar
+  const barY = bottom - 44;
+  const status = `
+  <rect x="30" y="${barY}" width="786" height="30" rx="8" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/>
+  <text x="46" y="${barY + 20}" font-family="${MONO}" font-size="12" fill="${c.ink}">${total} items · ${profile.projects.length} folders</text>
+  <text x="800" y="${barY + 20}" text-anchor="end" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.ink}">open full case studies on the portfolio →</text>`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t d">
+  <title id="t">projects.folder — TAWAN-OS</title>
+  <desc id="d">${esc(
+    profile.projects
+      .map(([name, , items]) => `${name}: ${items.map(([t, y, st, n]) => `${t} (${y}, ${st}) ${n}`).join("; ")}`)
+      .join(". ")
+  )}</desc>
+  <style>${MOTION_CSS}
+  </style>
+  <defs>${defs}
+  </defs>
+  ${back}
+  ${panels}
+  ${status}
+  <g class="cursor" style="${cursorPath}">${pixels(ICONS.cursor, { o: c.ink, w: "#FFFFFF" }, 0, 0, 3)}</g>
+  ${front}
+</svg>
+`;
+}
+
+// ---------- gallery viewers ----------
+
+const CATEGORY_FILL = { AI: c.sakura, Programming: c.sky, Game: c.mint };
+
+function galleryCard([slug, file, title, year, category], i) {
+  const W = 400;
+  const H = 340;
+  const { defs, back, front, fh } = windowChrome(W, H, file, "window", c.paper);
+  const img = readFileSync(join(outDir, "thumbs", `${slug}.webp`)).toString("base64");
+  const ix = 22;
+  const iy = 62;
+  const iw = 356;
+  const ih = 200;
+  const bottom = FX + fh;
+  const chipW = Math.ceil(category.length * 6.7) + 18;
+  const btn = (x, glyph) =>
+    `<rect x="${x}" y="${bottom - 44}" width="26" height="22" rx="5" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/><text x="${x + 13}" y="${bottom - 28}" text-anchor="middle" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.ink}">${glyph}</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t">
+  <title id="t">${esc(`${title} (${year}, ${category}) — preview image`)}</title>
+  <style>${MOTION_CSS}
+  </style>
+  <defs>${defs}
+    <clipPath id="photo"><rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" rx="6"/></clipPath>
+    <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#FFFFFF" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  ${back}
+  <rect x="${ix - 6}" y="${iy - 6}" width="${iw + 12}" height="${ih + 12}" rx="9" fill="#FFFFFF" stroke="${c.ink}" stroke-width="2"/>
+  <g clip-path="url(#photo)">
+    <image href="data:image/webp;base64,${img}" x="${ix}" y="${iy}" width="${iw}" height="${ih}" preserveAspectRatio="xMidYMid slice"/>
+    <rect class="shine" style="animation-delay:${(i * 0.7).toFixed(1)}s" x="${ix}" y="${iy}" width="90" height="${ih}" fill="url(#gloss)" transform="skewX(-15)"/>
+  </g>
+  <rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" rx="6" fill="none" stroke="${c.ink}" stroke-width="2"/>
+  ${sparkle(ix + iw - 8, iy + 4, 9, c.gold, i * 0.4)}
+  ${heartBubble(ix + 6, iy + ih - 40, 3, 1 + i * 0.6)}
+  <text x="${ix}" y="${bottom - 28}" font-family="${SANS}" font-size="17" font-weight="700" fill="${c.ink}">${esc(title)}</text>
+  <rect x="${ix}" y="${bottom - 20}" width="${chipW}" height="16" rx="8" fill="${CATEGORY_FILL[category]}" stroke="${c.ink}" stroke-width="1.5"/>
+  <text x="${ix + chipW / 2}" y="${bottom - 8}" text-anchor="middle" font-family="${MONO}" font-size="10.5" fill="${c.ink}">${esc(category)}</text>
+  <text x="${ix + chipW + 8}" y="${bottom - 8}" font-family="${MONO}" font-size="11" fill="${c.ink}">${year}</text>
+  ${btn(W - 108, "◀")}${btn(W - 78, "▶")}
+  ${front}
+</svg>
+`;
+}
+
+// ---------- footer ----------
+
+function footerCard() {
+  const W = 840;
+  const H = 176;
+  const pw = W - 28;
+  const ph = H - 28;
+  const barY = FX + ph - 46;
+  const apps = ["welcome.exe", "profile.sys", "experience.log", "projects.folder", "stats.exe"];
+  let tx = 160;
+  const tabs = apps
+    .map((name) => {
+      const w = Math.ceil(name.length * 6.7) + 20;
+      const out = `<rect x="${tx}" y="${barY + 11}" width="${w}" height="24" rx="6" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/><text x="${tx + w / 2}" y="${barY + 27}" text-anchor="middle" font-family="${MONO}" font-size="11" fill="${c.ink}">${name}</text>`;
+      tx += w + 6;
+      return out;
+    })
+    .join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t">
+  <title id="t">Thanks for visiting TAWAN-OS — see you in the next update.</title>
+  <style>${MOTION_CSS}
+    .beat { transform-box: fill-box; transform-origin: center; animation: beat 1.4s ease-in-out infinite; }
+    @keyframes beat { 0%, 100% { transform: scale(1) } 15% { transform: scale(1.25) } 30% { transform: scale(1) } 45% { transform: scale(1.15) } }
+    @media (prefers-reduced-motion: reduce) { .beat { animation: none !important } }
+  </style>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${c.lavender}"/>
+      <stop offset=".5" stop-color="${c.sakura}"/>
+      <stop offset="1" stop-color="${c.sky}"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="${c.titleA}"/>
+      <stop offset="1" stop-color="${c.titleB}"/>
+    </linearGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect x="7" y="7" width="2" height="2" fill="#FFFFFF" opacity=".45"/>
+    </pattern>
+    <clipPath id="panel"><rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14"/></clipPath>
+  </defs>
+  <rect x="${FX + 8}" y="${FX + 8}" width="${pw}" height="${ph}" rx="14" fill="${c.ink}"/>
+  <rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14" fill="url(#sky)"/>
+  <rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14" fill="url(#dots)"/>
+  <g clip-path="url(#panel)">
+    ${bokeh([[620, 60, 70, 1], [760, 110, 50, 5]])}
+    ${risers([300, 420, 520, 640, 720, 790], barY - 4, ["#FFFFFF", c.gold])}
+    <g class="bob">
+      ${pixels(AVATAR, AVATAR_COLORS, 36, FX + 6, 2)}
+    </g>
+  </g>
+  <text x="120" y="60" font-family="${SANS}" font-size="26" font-weight="700" fill="${c.paper}" stroke="${c.ink}" stroke-width="7" stroke-linejoin="round" paint-order="stroke">thanks for visiting ♥</text>
+  <text x="122" y="86" font-family="${MONO}" font-size="13" fill="${c.ink}">see you in the next update of TAWAN-OS ~</text>
+  ${sparkle(470, 44, 9, "#FFFFFF", 0)}
+  ${sparkle(560, 78, 6, c.gold, 0.9)}
+  ${heartBubble(500, 18, 3, 0.6)}
+  <!-- taskbar -->
+  <path d="M${FX} ${barY} h${pw} v${ph - (barY - FX) - 14} a14 14 0 0 1 -14 14 h-${pw - 28} a14 14 0 0 1 -14 -14 z" fill="url(#bar)"/>
+  <line x1="${FX}" y1="${barY}" x2="${FX + pw}" y2="${barY}" stroke="${c.ink}" stroke-width="3"/>
+  <rect x="24" y="${barY + 8}" width="124" height="30" rx="15" fill="${c.mint}" stroke="${c.ink}" stroke-width="2"/>
+  ${pixels(ICONS.heart, ICON_COLORS, 34, barY + 14, 2)}
+  <text x="60" y="${barY + 28}" font-family="${SANS}" font-size="15" font-weight="700" fill="${c.ink}">TAWAN-OS</text>
+  ${tabs}
+  <rect x="${FX + pw - 104}" y="${barY + 9}" width="90" height="28" rx="6" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/>
+  <g class="beat">${pixels(ICONS.heart, ICON_COLORS, FX + pw - 96, barY + 14, 2)}</g>
+  <text x="${FX + pw - 70}" y="${barY + 28}" font-family="${MONO}" font-size="12" fill="${c.ink}">11:11</text>
+  <rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14" fill="none" stroke="${c.ink}" stroke-width="3"/>
+</svg>
+`;
+}
+
+// ---------- banner ----------
+
+// 5×7 pixel font, only the glyphs the banner uses.
+const FONT = {
+  A: [".###.", "#...#", "#...#", "#####", "#...#", "#...#", "#...#"],
+  B: ["####.", "#...#", "#...#", "####.", "#...#", "#...#", "####."],
+  E: ["#####", "#....", "#....", "####.", "#....", "#....", "#####"],
+  G: [".###.", "#...#", "#....", "#.###", "#...#", "#...#", ".###."],
+  I: ["#####", "..#..", "..#..", "..#..", "..#..", "..#..", "#####"],
+  N: ["#...#", "##..#", "#.#.#", "#.#.#", "#..##", "#...#", "#...#"],
+  O: [".###.", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."],
+  P: ["####.", "#...#", "#...#", "####.", "#....", "#....", "#...."],
+  R: ["####.", "#...#", "#...#", "####.", "#.#..", "#..#.", "#...#"],
+  S: [".####", "#....", "#....", ".###.", "....#", "....#", "####."],
+  T: ["#####", "..#..", "..#..", "..#..", "..#..", "..#..", "..#.."],
+  W: ["#...#", "#...#", "#...#", "#.#.#", "#.#.#", "##.##", "#...#"],
+  "-": [".....", ".....", ".....", "#####", ".....", ".....", "....."],
+  " ": [".....", ".....", ".....", ".....", ".....", ".....", "....."],
+};
+const textWidth = (str, size) => str.length * 6 * size - size;
+
+// Pixel text as one path (cheaper than a rect per pixel).
+function pixelText(str, x, y, size, fill, extra = "") {
+  let d = "";
+  [...str].forEach((ch, i) => {
+    FONT[ch].forEach((row, r) =>
+      [...row].forEach((px, col) => {
+        if (px === "#") d += `M${x + (i * 6 + col) * size} ${y + r * size}h${size}v${size}h-${size}z`;
+      })
+    );
+  });
+  return `<path d="${d}" fill="${fill}" ${extra}/>`;
+}
+
+function bannerCard() {
+  const W = 1200;
+  const H = 340;
+  const pw = W - 28;
+  const ph = H - 28;
+  const ground = 262;
+  const tickerY = FX + ph - 40;
+
+  // logo
+  const logo = "TAWAN-OS";
+  const ls = 11;
+  const lw = textWidth(logo, ls);
+  const lx = Math.round(W / 2 - lw / 2);
+  const ly = 70;
+  const press = "PRESS START";
+  const ps = 4;
+  const px = Math.round(W / 2 - textWidth(press, ps) / 2);
+
+  // rainbow behind the logo
+  const rainbow = [c.hotPink, c.gold, c.mint, c.sky, c.lavender]
+    .map((col, k) => `<path d="M${W / 2 - 300 + k * 14} ${ground} a${300 - k * 14} ${250 - k * 14} 0 0 1 ${2 * (300 - k * 14)} 0" fill="none" stroke="${col}" stroke-width="14" opacity=".75"/>`)
+    .join("");
+
+  // ticker: the roles repeated, scrolled by exactly one copy so the loop is seamless
+  // non-breaking spaces: SVG collapses ordinary trailing spaces, which would close the gap between copies
+  const phrase = `${profile.roles.map((r) => r.toUpperCase()).join("\u00A0 ✦ \u00A0")}\u00A0 ✦ \u00A0`;
+  const charW = 10.2; // approx advance of a 17px bold monospace glyph; textLength pins each copy to copyW
+  const copyW = Math.round(phrase.length * charW);
+  const copies = Math.ceil(W / copyW) + 1;
+
+  const screen = crt(FX, FX, pw, ph);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t d">
+  <title id="t">TAWAN-OS — Thanatpat Promthong</title>
+  <desc id="d">${esc(`Animated banner. A boot window loads, then the pixel logo TAWAN-OS pops in over a pastel rainbow and PRESS START blinks. A pixel Tawan walks across the hill while a ticker scrolls: ${profile.roles.join(", ")}.`)}</desc>
+  <style>${MOTION_CSS}
+    .boot { opacity: 0; animation: boot 10s linear infinite; }
+    .load { transform-box: fill-box; transform-origin: left; animation: load 10s ease-in-out infinite; }
+    .logo { transform-box: fill-box; transform-origin: center bottom; animation: logo 10s cubic-bezier(.34,1.56,.64,1) infinite; }
+    .press { animation: press 10s steps(1) infinite; }
+    .walk { animation: walk 14s linear infinite; }
+    .step { animation: step .5s ease-in-out infinite; }
+    .ticker { animation: ticker ${(copyW / 60).toFixed(1)}s linear infinite; }
+    .logo-glitch { opacity: 0; animation: glitch 5s steps(1) infinite; }
+    @keyframes boot { 0%, 24% { opacity: 1 } 28%, 100% { opacity: 0 } }
+    @keyframes load { 0% { transform: scaleX(0) } 22%, 100% { transform: scaleX(1) } }
+    @keyframes logo { 0%, 26% { transform: scale(0) } 34%, 95% { transform: scale(1) } 100% { transform: scale(0) } }
+    @keyframes press { 0%, 36% { opacity: 0 } 37% { opacity: 1 } 45% { opacity: 0 } 50% { opacity: 1 } 58% { opacity: 0 } 63% { opacity: 1 } 71% { opacity: 0 } 76% { opacity: 1 } 84% { opacity: 0 } 89% { opacity: 1 } 96% { opacity: 0 } }
+    @keyframes walk { from { transform: translateX(-140px) } to { transform: translateX(${W + 40}px) } }
+    @keyframes step { 50% { transform: translateY(-4px) } }
+    @keyframes ticker { from { transform: translateX(0) } to { transform: translateX(-${copyW}px) } }
+    @media (prefers-reduced-motion: reduce) { .boot { opacity: 0 } .press, .logo { opacity: 1 } }
+  </style>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${c.lavender}"/>
+      <stop offset=".5" stop-color="${c.sakura}"/>
+      <stop offset="1" stop-color="${c.sky}"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="${c.titleA}"/>
+      <stop offset="1" stop-color="${c.titleB}"/>
+    </linearGradient>
+    <linearGradient id="logoFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="${c.sakura}"/>
+    </linearGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect x="7" y="7" width="2" height="2" fill="#FFFFFF" opacity=".45"/>
+    </pattern>
+    <clipPath id="body"><rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14"/></clipPath>
+    ${screen.defs}
+  </defs>
+  <rect x="${FX + 8}" y="${FX + 8}" width="${pw}" height="${ph}" rx="14" fill="${c.ink}"/>
+  <rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14" fill="url(#sky)"/>
+  <rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14" fill="url(#dots)"/>
+
+  <g clip-path="url(#body)">
+    ${bokeh([[140, 90, 110, 0], [1040, 80, 90, 3], [880, 260, 120, 6], [330, 270, 90, 8]])}
+    ${rainbow}
+    <g class="drift">${pixels(CLOUD, { o: c.ink, w: "#FFFFFF", s: c.lavender }, 120, 60, 6)}</g>
+    <g class="drift2">${pixels(CLOUD, { o: c.ink, w: "#FFFFFF", s: c.lavender }, 950, 120, 5)}</g>
+    <g class="drift">${pixels(CLOUD, { o: c.ink, w: "#FFFFFF", s: c.lavender }, 760, 40, 4)}</g>
+    ${sparkle(250, 170, 12, "#FFFFFF", 0)}
+    ${sparkle(1000, 210, 10, c.gold, 0.7)}
+    ${sparkle(330, 60, 8, c.gold, 1.4)}
+    ${sparkle(900, 50, 9, "#FFFFFF", 2.1)}
+    <path d="M${FX} ${ground + 6} Q 300 ${ground - 26} 600 ${ground + 2} T ${FX + pw} ${ground - 4} V ${FX + ph} H ${FX} Z" fill="${c.mint}" stroke="${c.ink}" stroke-width="3"/>
+    ${risers([80, 200, 330, 470, 610, 740, 860, 990, 1100], ground, ["#FFFFFF", c.gold, c.sakura])}
+
+    <!-- boot window -->
+    <g class="boot">
+      <rect x="${W / 2 - 214}" y="98" width="428" height="112" rx="12" fill="${c.ink}"/>
+      <rect x="${W / 2 - 220}" y="92" width="428" height="112" rx="12" fill="${c.paper}" stroke="${c.ink}" stroke-width="3"/>
+      <path d="M${W / 2 - 220} 104 a12 12 0 0 1 12 -12 h404 a12 12 0 0 1 12 12 v20 h-428 z" fill="url(#bar)"/>
+      <text x="${W / 2 - 204}" y="114" font-family="${MONO}" font-size="13" font-weight="700" fill="${c.paper}">boot.exe</text>
+      <text x="${W / 2 - 200}" y="152" font-family="${MONO}" font-size="16" fill="${c.ink}">booting TAWAN-OS ...</text>
+      <rect x="${W / 2 - 200}" y="166" width="388" height="20" rx="4" fill="#FFFFFF" stroke="${c.ink}" stroke-width="2"/>
+      <rect class="load" x="${W / 2 - 197}" y="169" width="382" height="14" rx="2" fill="${c.titleB}"/>
+    </g>
+
+    <!-- logo -->
+    <g class="logo">
+      ${pixelText(logo, lx + 8, ly + 8, ls, c.ink)}
+      ${pixelText(logo, lx + 4, ly + 4, ls, c.hotPink)}
+      <g class="logo-glitch">${pixelText(logo, lx - 6, ly, ls, c.sky)}</g>
+      <g class="logo-glitch" style="animation-direction:reverse">${pixelText(logo, lx + 6, ly, ls, c.gold)}</g>
+      ${pixelText(logo, lx, ly, ls, "url(#logoFill)")}
+    </g>
+    <g class="press">${pixelText(press, px + 3, 178, ps, c.ink)}${pixelText(press, px, 175, ps, "#FFFFFF")}</g>
+    ${heartBubble(lx + lw - 6, ly - 46, 4, 3.5)}
+
+    <!-- walker -->
+    <!-- the transform attribute is the resting spot in the still copy; the CSS animation overrides it -->
+    <g class="walk" transform="translate(150 0)">
+      <g class="step">${pixels(AVATAR, AVATAR_COLORS, 0, ground - AVATAR_H * 3 + 26, 3)}</g>
+    </g>
+
+    <!-- ticker -->
+    <rect x="${FX}" y="${tickerY}" width="${pw}" height="40" fill="url(#bar)"/>
+    <line x1="${FX}" y1="${tickerY}" x2="${FX + pw}" y2="${tickerY}" stroke="${c.ink}" stroke-width="3"/>
+    <g class="ticker">
+      ${Array.from({ length: copies }, (_, k) => `<text x="${FX + 16 + k * copyW}" y="${tickerY + 26}" textLength="${copyW}" lengthAdjust="spacing" font-family="${MONO}" font-size="17" font-weight="700" fill="${c.paper}">${esc(phrase)}</text>`).join("")}
+    </g>
+    ${screen.layer.replace('<g clip-path="url(#body)">', "<g>")}
+  </g>
+  <rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14" fill="none" stroke="${c.ink}" stroke-width="3"/>
+</svg>
+`;
+}
+
 // ---------- taskbar buttons ----------
 
 function taskButton({ label, icon, fill, title }) {
@@ -538,6 +772,8 @@ const buttons = [
   { file: "task-portfolio.svg", label: "Portfolio", icon: "window", fill: c.sakura, title: "Portfolio website" },
   { file: "task-github.svg", label: "GitHub", icon: "code", fill: c.lavender, title: "GitHub — tawaninm" },
   { file: "task-mail.svg", label: "Mail", icon: "mail", fill: c.sky, title: "Email — tawaninm13@gmail.com" },
+  { file: "task-facebook.svg", label: "Facebook", icon: "facebook", fill: c.sky, title: "Facebook — Thanatpat Promthong" },
+  { file: "task-instagram.svg", label: "Instagram", icon: "instagram", fill: c.sakura, title: "Instagram — towo_tawan" },
 ];
 
 // ---------- contrast gate ----------
@@ -571,7 +807,17 @@ if (failed) {
 // ---------- write ----------
 
 mkdirSync(outDir, { recursive: true });
-writeFileSync(join(outDir, "welcome.svg"), welcome());
-writeFileSync(join(outDir, "profile.svg"), profileCard());
+// animated cards also get a still copy for viewers who prefer reduced motion
+const writeCard = (name, svg) => {
+  writeFileSync(join(outDir, `${name}.svg`), svg);
+  writeFileSync(join(outDir, `${name}-still.svg`), still(svg));
+};
+writeCard("welcome", welcome());
+writeCard("profile", profileCard());
+writeCard("experience", experienceCard());
+writeCard("projects", projectsCard());
+writeCard("footer", footerCard());
+writeCard("banner", bannerCard());
+profile.gallery.forEach((g, i) => writeCard(`gallery-${g[0]}`, galleryCard(g, i)));
 for (const b of buttons) writeFileSync(join(outDir, b.file), taskButton(b));
-console.log(`wrote ${2 + buttons.length} files to assets/`);
+console.log(`wrote ${2 * (6 + profile.gallery.length) + buttons.length} files to assets/`);
