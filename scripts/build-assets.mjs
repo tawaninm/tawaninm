@@ -206,7 +206,9 @@ function profileCard() {
         const sx = x + 128 + s * 24;
         const base = `<rect x="${sx}" y="${y - 12}" width="20" height="14" rx="2" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/>`;
         return on
-          ? base + `<rect class="charge" style="animation-delay:${(s * 0.25 + i * 0.1).toFixed(2)}s" x="${sx}" y="${y - 12}" width="20" height="14" rx="2" fill="${c.titleB}" stroke="${c.ink}" stroke-width="1.5"/>`
+          ? base +
+            `<rect x="${sx}" y="${y - 12}" width="20" height="14" rx="2" fill="${c.titleB}" stroke="${c.ink}" stroke-width="1.5"/>` +
+            `<rect class="glint" style="animation-delay:${(s * 0.25 + i * 0.1).toFixed(2)}s" x="${sx + 2}" y="${y - 10}" width="16" height="10" rx="1" fill="#FFFFFF" opacity="0"/>`
           : base;
       }).join("");
       return `
@@ -288,9 +290,11 @@ function experienceCard() {
       const chipW = Math.ceil(dates.length * 6.7) + 16;
       const chipX = 556 - chipW;
       return `
-  <g class="slidein" style="animation-delay:${(0.15 + i * 0.22).toFixed(2)}s">
-    <rect x="30" y="${y + 6}" width="40" height="40" rx="10" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/>
-    ${pixels(ICONS[icon], ICON_COLORS, 35, y + 13, 3)}
+  <g>
+    <g class="nudge" style="animation-delay:${(i * 0.25).toFixed(2)}s">
+      <rect x="30" y="${y + 6}" width="40" height="40" rx="10" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/>
+      ${pixels(ICONS[icon], ICON_COLORS, 35, y + 13, 3)}
+    </g>
     <path d="M78 ${y + 20} l-8 6 l8 4 z" fill="${fill}" stroke="${c.ink}" stroke-width="2" stroke-linejoin="round"/>
     <rect x="78" y="${y}" width="486" height="60" rx="12" fill="${fill}" stroke="${c.ink}" stroke-width="2"/>
     <rect x="76" y="${y + 21}" width="4" height="8" fill="${fill}"/>
@@ -408,10 +412,10 @@ function projectsCard() {
       const files = items
         .map(([title, year, stack, note], j) => {
           const iy = y + head + 8 + j * itemH;
-          const delay = (0.2 + order++ * 0.12).toFixed(2);
+          const delay = (order++ * 0.2).toFixed(2);
           return `
-    <g class="slidein" style="animation-delay:${delay}s">
-      ${pixels(ICONS.doc, ICON_COLORS, x + 14, iy + 6, 3)}
+    <g>
+      <g class="nudge" style="animation-delay:${delay}s">${pixels(ICONS.doc, ICON_COLORS, x + 14, iy + 6, 3)}</g>
       <text x="${x + 44}" y="${iy + 16}" font-family="${SANS}" font-size="14" font-weight="700" fill="${c.ink}">${esc(title)}</text>
       <text x="${x + panelW - 12}" y="${iy + 16}" text-anchor="end" font-family="${MONO}" font-size="11" fill="${c.ink}">${year}</text>
       <text x="${x + 44}" y="${iy + 31}" font-family="${MONO}" font-size="10.5" fill="${c.ink}">${esc(stack)}</text>

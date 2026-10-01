@@ -253,8 +253,10 @@ export function windowChrome(W, H, title, icon, bodyFill) {
 
 // ---------- motion (shared by every card) ----------
 
-// One stylesheet for all cards. Each element's resting state (no animation) is a complete
-// static frame. Chromium does not apply prefers-reduced-motion inside an SVG shown through
+// One stylesheet for all cards. Rule: animation only adds to a card, it never hides content
+// that should be read. Browsers pause animations in off-screen images, and an animation that
+// starts from opacity 0 then leaves the content invisible. Each element's resting state (no
+// animation) is a complete static frame. Chromium does not apply prefers-reduced-motion inside an SVG shown through
 // <img>, so the README swaps in a still copy (see still()) with <picture> instead; the media
 // block below only helps when the SVG is opened directly.
 export const MOTION_CSS = `
@@ -268,8 +270,8 @@ export const MOTION_CSS = `
     .glitch { opacity: 0; animation: glitch 6s steps(1) infinite; }
     .bob { animation: bob 3s ease-in-out infinite; }
     .blink { opacity: 0; animation: blink 4s steps(1) infinite; }
-    .charge { animation: charge 6s ease-out infinite both; }
-    .slidein { animation: slidein .6s cubic-bezier(.16,1,.3,1) 1 both; }
+    .glint { animation: glint 6s ease-out infinite both; }
+    .nudge { transform-box: fill-box; animation: nudge 3s ease-in-out infinite; }
     .dot { transform-box: fill-box; animation: dot 1.2s ease-in-out infinite; }
     .cursor { animation: cursor 12s ease-in-out infinite; }
     .shine { animation: shine 6s ease-in-out infinite; }
@@ -282,8 +284,8 @@ export const MOTION_CSS = `
     @keyframes glitch { 0% { opacity: 0 } 90% { opacity: .95; transform: translateX(-4px) } 92% { opacity: 0 } 94% { opacity: .95; transform: translateX(3px) } 96% { opacity: 0 } }
     @keyframes bob { 50% { transform: translateY(-5px) } }
     @keyframes blink { 0% { opacity: 0 } 92% { opacity: 1 } 95% { opacity: 0 } }
-    @keyframes charge { 0% { opacity: 0 } 12% { opacity: 1 } 88% { opacity: 1 } 100% { opacity: 0 } }
-    @keyframes slidein { from { transform: translateX(-14px); opacity: 0 } to { transform: none; opacity: 1 } }
+    @keyframes glint { 0%, 100% { opacity: 0 } 6% { opacity: .65 } 18% { opacity: 0 } }
+    @keyframes nudge { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-3px) } }
     @keyframes cursor {
       0%, 18% { transform: var(--p1) }
       25%, 43% { transform: var(--p2) }
