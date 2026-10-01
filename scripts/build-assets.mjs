@@ -1,7 +1,7 @@
 // Generates the TAWAN-OS README cards as SVG files in assets/.
 // Standard library only. Run from the repo root:  node scripts/build-assets.mjs
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { profile, palette as c } from "./profile.mjs";
@@ -463,6 +463,54 @@ function projectsCard() {
 `;
 }
 
+// ---------- gallery viewers ----------
+
+const CATEGORY_FILL = { AI: c.sakura, Programming: c.sky, Game: c.mint };
+
+function galleryCard([slug, file, title, year, category], i) {
+  const W = 400;
+  const H = 340;
+  const { defs, back, front, fh } = windowChrome(W, H, file, "window", c.paper);
+  const img = readFileSync(join(outDir, "thumbs", `${slug}.webp`)).toString("base64");
+  const ix = 22;
+  const iy = 62;
+  const iw = 356;
+  const ih = 200;
+  const bottom = FX + fh;
+  const chipW = Math.ceil(category.length * 6.7) + 18;
+  const btn = (x, glyph) =>
+    `<rect x="${x}" y="${bottom - 44}" width="26" height="22" rx="5" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/><text x="${x + 13}" y="${bottom - 28}" text-anchor="middle" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.ink}">${glyph}</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t">
+  <title id="t">${esc(`${title} (${year}, ${category}) — preview image`)}</title>
+  <style>${MOTION_CSS}
+  </style>
+  <defs>${defs}
+    <clipPath id="photo"><rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" rx="6"/></clipPath>
+    <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#FFFFFF" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  ${back}
+  <rect x="${ix - 6}" y="${iy - 6}" width="${iw + 12}" height="${ih + 12}" rx="9" fill="#FFFFFF" stroke="${c.ink}" stroke-width="2"/>
+  <g clip-path="url(#photo)">
+    <image href="data:image/webp;base64,${img}" x="${ix}" y="${iy}" width="${iw}" height="${ih}" preserveAspectRatio="xMidYMid slice"/>
+    <rect class="shine" style="animation-delay:${(i * 0.7).toFixed(1)}s" x="${ix}" y="${iy}" width="90" height="${ih}" fill="url(#gloss)" transform="skewX(-15)"/>
+  </g>
+  <rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" rx="6" fill="none" stroke="${c.ink}" stroke-width="2"/>
+  ${sparkle(ix + iw - 8, iy + 4, 9, c.gold, i * 0.4)}
+  ${heartBubble(ix + 6, iy + ih - 40, 3, 1 + i * 0.6)}
+  <text x="${ix}" y="${bottom - 28}" font-family="${SANS}" font-size="17" font-weight="700" fill="${c.ink}">${esc(title)}</text>
+  <rect x="${ix}" y="${bottom - 20}" width="${chipW}" height="16" rx="8" fill="${CATEGORY_FILL[category]}" stroke="${c.ink}" stroke-width="1.5"/>
+  <text x="${ix + chipW / 2}" y="${bottom - 8}" text-anchor="middle" font-family="${MONO}" font-size="10.5" fill="${c.ink}">${esc(category)}</text>
+  <text x="${ix + chipW + 8}" y="${bottom - 8}" font-family="${MONO}" font-size="11" fill="${c.ink}">${year}</text>
+  ${btn(W - 108, "◀")}${btn(W - 78, "▶")}
+  ${front}
+</svg>
+`;
+}
+
 // ---------- taskbar buttons ----------
 
 function taskButton({ label, icon, fill, title }) {
@@ -521,5 +569,6 @@ writeFileSync(join(outDir, "welcome.svg"), welcome());
 writeFileSync(join(outDir, "profile.svg"), profileCard());
 writeFileSync(join(outDir, "experience.svg"), experienceCard());
 writeFileSync(join(outDir, "projects.svg"), projectsCard());
+profile.gallery.forEach((g, i) => writeFileSync(join(outDir, `gallery-${g[0]}.svg`), galleryCard(g, i)));
 for (const b of buttons) writeFileSync(join(outDir, b.file), taskButton(b));
-console.log(`wrote ${4 + buttons.length} files to assets/`);
+console.log(`wrote ${4 + profile.gallery.length + buttons.length} files to assets/`);

@@ -72,6 +72,19 @@ export const profile = {
       ["Polygon Mesh", "2025", "Figma · game-based learning", "From vertices to 3D meshes, then a jigsaw game"],
     ]],
   ],
+  // Project gallery (Picture Viewer cards). Thumbnails live in assets/thumbs/<slug>.webp, made once from
+  // the portfolio's preview images with ImageMagick:
+  //   convert <preview.png> -resize 480x270^ -gravity center -extent 480x270 -strip -quality 72 assets/thumbs/<slug>.webp
+  // (Lorcana uses -gravity north because its preview is a tall page.)
+  // [slug on the portfolio, file name in the title bar, title, year, category]
+  gallery: [
+    ["tawan-os-agent-harness", "tawan-os.png", "TAWAN-OS", "2026", "AI"],
+    ["hybricareer-ai", "hybricareer.png", "HybriCareer AI", "2026", "AI"],
+    ["lorcana-cloud-playlab", "lorcana.png", "Disney Lorcana PlayLab", "2026", "Programming"],
+    ["redbull-f1-verstappen", "redbull-f1.png", "Red Bull F1 3D", "2026", "AI"],
+    ["vps-tycoon", "vps-tycoon.png", "VPS-Tycoon", "2025", "Game"],
+    ["criminal-mind", "criminal-minds.png", "Criminal Minds", "2023", "Game"],
+  ],
   // trophies sidebar: [title, detail, year]
   achievements: [
     ["Top 10 Finalist", "Generation Thailand Hackathon · HybriCareer AI", "2026"],
