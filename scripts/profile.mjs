@@ -28,17 +28,24 @@ export const profile = {
     ["Roblox Studio", 1, "Beginner"],
   ],
   inventory: ["Claude", "ChatGPT", "Gemini", "NotebookLM", "Python", "C#", "GDScript", "Java", "JavaScript", "HTML/CSS", "Lua", "SQL", "Figma"],
-  // experience.log — order as chosen by Tawan (current role first). Sources: old README + portfolio resume page.
+  // experience.log — current role and internship pinned, the rest by end month. Sources: old README + portfolio resume page.
   // [icon, role, org, dates, current?, one-line highlight]
   experience: [
+    // pinned: current role and the internship
     ["heart", "Coding Teacher", "Code Genius EmQuartier", "Feb 2026 – Now", true, "Scratch, Micro:bit and Python for primary school students"],
     ["window", "UX/UI Designer Intern", "Gumon Technology", "Jun – Aug 2026", false, "Redesigned MonsTask UI; set up a 121-token design system"],
+    // the rest by end month, newest first
     ["folder", "Head · Roblox Journey Workshop #2", "IT Openhouse 2026 · KMITL", "Sep 2026", false, "2-day Lua workshop; led 10+ TAs for 100+ students"],
     ["star", "Head of Game Workshop", "ITCAMP 22 · KMITL", "Apr – May 2026", false, "Unreal Engine 5 curriculum; trained the TA and TD team"],
     ["code", "Teaching Assistant · Java OOP", "School of IT · KMITL", "Nov 2025 – Apr 2026", false, "1-on-1 code feedback for 100+ first-year students"],
-    ["star", "Staff & Teaching Director", "ITCAMP 21 · The Glacial Horizon · KMITL", "Apr – May 2025", false, "Guided campers' projects over 3 days; taught 1 Unreal Engine section"],
     ["sun", "Coding & Math Tutor", "Login-Engineering Academy", "Sep 2024 – Mar 2026", false, "Godot, math and contest / portfolio projects"],
     ["folder", "Head · Roblox Journey Workshop #1", "IT Openhouse 2025 · KMITL", "Nov 2025", false, "2-day Lua workshop; led 10+ TAs for 100+ students"],
+    ["star", "Staff & Teaching Director", "ITCAMP 21 · The Glacial Horizon · KMITL", "Apr – May 2025", false, "Guided campers' projects over 3 days; taught 1 Unreal Engine section"],
+  ],
+  // workshops attended (from the resume page): [title, detail]
+  workshops: [
+    ["LINE Developers University", "Dialogflow + LINE Messaging API · 2025"],
+    ["Game Business Workshop", "Gamification for business strategy · 2025"],
   ],
   // trophies sidebar: [title, detail, year]
   achievements: [

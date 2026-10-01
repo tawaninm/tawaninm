@@ -612,6 +612,18 @@ function experienceCard() {
     })
     .join("");
 
+  // workshops attended, under the languages
+  const shopY = langY + 26 + profile.languages.length * 22 + 14;
+  const workshops = profile.workshops
+    .map(([title, detail], k) => {
+      const y = shopY + 12 + k * 52;
+      return `
+  <rect x="${sx}" y="${y}" width="${sw}" height="44" rx="10" fill="${CHIP_FILLS[(k + 1) % CHIP_FILLS.length]}" stroke="${c.ink}" stroke-width="2"/>
+  <text x="${sx + 12}" y="${y + 18}" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.ink}">${esc(title)}</text>
+  <text x="${sx + 12}" y="${y + 35}" font-family="${SANS}" font-size="11.5" fill="${c.ink}">${esc(detail)}</text>`;
+    })
+    .join("");
+
   const heading = (x, y, text) =>
     `<rect x="${x}" y="${y - 15}" width="${Math.ceil(text.length * MONO12_W) + 20}" height="20" rx="4" fill="${c.ink}"/><text x="${x + 10}" y="${y}" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.paper}">${esc(text)}</text>`;
 
@@ -620,7 +632,9 @@ function experienceCard() {
   <desc id="d">${esc(
     `Work history: ${profile.experience.map(([, r, o, d, , n]) => `${r}, ${o}, ${d}: ${n}`).join(". ")}. Trophies: ${profile.achievements
       .map(([t, d, y]) => `${t}, ${d}, ${y}`)
-      .join(". ")}. Languages: ${profile.languages.map(([l, , lab]) => `${l} ${lab}`).join(", ")}.`
+      .join(". ")}. Languages: ${profile.languages.map(([l, , lab]) => `${l} ${lab}`).join(", ")}. Workshops: ${profile.workshops
+      .map(([t, d]) => `${t}, ${d}`)
+      .join(". ")}.`
   )}</desc>
   <style>${MOTION_CSS}
   </style>
@@ -635,6 +649,8 @@ function experienceCard() {
   ${trophies}
   ${heading(sx, langY + 6, "LANGUAGES")}
   ${langs}
+  ${heading(sx, shopY, "WORKSHOPS")}
+  ${workshops}
   ${front}
 </svg>
 `;
