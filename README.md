@@ -1,3 +1,17 @@
+<!--
+  TAWAN-OS cards
+  · text and colours live in scripts/profile.mjs → edit, then run:  node scripts/build-assets.mjs
+  · generated SVGs are written to assets/
+-->
+
+<div align="center">
+
+<img src="assets/welcome.svg" alt="welcome.exe — TAWAN-OS. Thanatpat Promthong, aka Tawan. UX/UI Designer, Game Developer, Coding Tutor. IT at KMITL, Multimedia &amp; Game Technology. A terminal line types in turn: designing user-centered interfaces / building games in Godot, Unity, Unreal / teaching kids to code / currently: UX/UI intern at Gumon Technology. Status: online, Bangkok, Thailand." width="100%">
+
+<a href="https://github.com/tawaninm"><img src="assets/task-start.svg" alt="Start — TAWAN-OS" width="24%"></a> <a href="https://porfolio-website-five-inky.vercel.app/"><img src="assets/task-portfolio.svg" alt="Portfolio website" width="24%"></a> <a href="https://github.com/tawaninm"><img src="assets/task-github.svg" alt="GitHub — tawaninm" width="24%"></a> <a href="mailto:tawaninm13@gmail.com"><img src="assets/task-mail.svg" alt="Email — tawaninm13@gmail.com" width="24%"></a>
+
+</div>
+
 # Hi ![](https://user-images.githubusercontent.com/18350557/176309783-0785949b-9127-417c-8b55-ab5a4333674e.gif) My name is Thanatpat Promthong
 
 ## Information Technology Student - Faculty of Information Technology, King Mongkut's Institute of Technology Ladkrabang
