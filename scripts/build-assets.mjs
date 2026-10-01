@@ -29,6 +29,7 @@ import {
   CHIP_FILLS,
   MONO12_W,
   wrap,
+  still,
 } from "./lib/svg.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -581,6 +582,171 @@ function footerCard() {
 `;
 }
 
+// ---------- banner ----------
+
+// 5×7 pixel font, only the glyphs the banner uses.
+const FONT = {
+  A: [".###.", "#...#", "#...#", "#####", "#...#", "#...#", "#...#"],
+  B: ["####.", "#...#", "#...#", "####.", "#...#", "#...#", "####."],
+  E: ["#####", "#....", "#....", "####.", "#....", "#....", "#####"],
+  G: [".###.", "#...#", "#....", "#.###", "#...#", "#...#", ".###."],
+  I: ["#####", "..#..", "..#..", "..#..", "..#..", "..#..", "#####"],
+  N: ["#...#", "##..#", "#.#.#", "#.#.#", "#..##", "#...#", "#...#"],
+  O: [".###.", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."],
+  P: ["####.", "#...#", "#...#", "####.", "#....", "#....", "#...."],
+  R: ["####.", "#...#", "#...#", "####.", "#.#..", "#..#.", "#...#"],
+  S: [".####", "#....", "#....", ".###.", "....#", "....#", "####."],
+  T: ["#####", "..#..", "..#..", "..#..", "..#..", "..#..", "..#.."],
+  W: ["#...#", "#...#", "#...#", "#.#.#", "#.#.#", "##.##", "#...#"],
+  "-": [".....", ".....", ".....", "#####", ".....", ".....", "....."],
+  " ": [".....", ".....", ".....", ".....", ".....", ".....", "....."],
+};
+const textWidth = (str, size) => str.length * 6 * size - size;
+
+// Pixel text as one path (cheaper than a rect per pixel).
+function pixelText(str, x, y, size, fill, extra = "") {
+  let d = "";
+  [...str].forEach((ch, i) => {
+    FONT[ch].forEach((row, r) =>
+      [...row].forEach((px, col) => {
+        if (px === "#") d += `M${x + (i * 6 + col) * size} ${y + r * size}h${size}v${size}h-${size}z`;
+      })
+    );
+  });
+  return `<path d="${d}" fill="${fill}" ${extra}/>`;
+}
+
+function bannerCard() {
+  const W = 1200;
+  const H = 340;
+  const pw = W - 28;
+  const ph = H - 28;
+  const ground = 262;
+  const tickerY = FX + ph - 40;
+
+  // logo
+  const logo = "TAWAN-OS";
+  const ls = 11;
+  const lw = textWidth(logo, ls);
+  const lx = Math.round(W / 2 - lw / 2);
+  const ly = 70;
+  const press = "PRESS START";
+  const ps = 4;
+  const px = Math.round(W / 2 - textWidth(press, ps) / 2);
+
+  // rainbow behind the logo
+  const rainbow = [c.hotPink, c.gold, c.mint, c.sky, c.lavender]
+    .map((col, k) => `<path d="M${W / 2 - 300 + k * 14} ${ground} a${300 - k * 14} ${250 - k * 14} 0 0 1 ${2 * (300 - k * 14)} 0" fill="none" stroke="${col}" stroke-width="14" opacity=".75"/>`)
+    .join("");
+
+  // ticker: the roles repeated, scrolled by exactly one copy so the loop is seamless
+  // non-breaking spaces: SVG collapses ordinary trailing spaces, which would close the gap between copies
+  const phrase = `${profile.roles.map((r) => r.toUpperCase()).join("\u00A0 ✦ \u00A0")}\u00A0 ✦ \u00A0`;
+  const charW = 10.2; // approx advance of a 17px bold monospace glyph; textLength pins each copy to copyW
+  const copyW = Math.round(phrase.length * charW);
+  const copies = Math.ceil(W / copyW) + 1;
+
+  const screen = crt(FX, FX, pw, ph);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t d">
+  <title id="t">TAWAN-OS — Thanatpat Promthong</title>
+  <desc id="d">${esc(`Animated banner. A boot window loads, then the pixel logo TAWAN-OS pops in over a pastel rainbow and PRESS START blinks. A pixel Tawan walks across the hill while a ticker scrolls: ${profile.roles.join(", ")}.`)}</desc>
+  <style>${MOTION_CSS}
+    .boot { opacity: 0; animation: boot 10s linear infinite; }
+    .load { transform-box: fill-box; transform-origin: left; animation: load 10s ease-in-out infinite; }
+    .logo { transform-box: fill-box; transform-origin: center bottom; animation: logo 10s cubic-bezier(.34,1.56,.64,1) infinite; }
+    .press { animation: press 10s steps(1) infinite; }
+    .walk { animation: walk 14s linear infinite; }
+    .step { animation: step .5s ease-in-out infinite; }
+    .ticker { animation: ticker ${(copyW / 60).toFixed(1)}s linear infinite; }
+    .logo-glitch { opacity: 0; animation: glitch 5s steps(1) infinite; }
+    @keyframes boot { 0%, 24% { opacity: 1 } 28%, 100% { opacity: 0 } }
+    @keyframes load { 0% { transform: scaleX(0) } 22%, 100% { transform: scaleX(1) } }
+    @keyframes logo { 0%, 26% { transform: scale(0) } 34%, 95% { transform: scale(1) } 100% { transform: scale(0) } }
+    @keyframes press { 0%, 36% { opacity: 0 } 37% { opacity: 1 } 45% { opacity: 0 } 50% { opacity: 1 } 58% { opacity: 0 } 63% { opacity: 1 } 71% { opacity: 0 } 76% { opacity: 1 } 84% { opacity: 0 } 89% { opacity: 1 } 96% { opacity: 0 } }
+    @keyframes walk { from { transform: translateX(-140px) } to { transform: translateX(${W + 40}px) } }
+    @keyframes step { 50% { transform: translateY(-4px) } }
+    @keyframes ticker { from { transform: translateX(0) } to { transform: translateX(-${copyW}px) } }
+    @media (prefers-reduced-motion: reduce) { .boot { opacity: 0 } .press, .logo { opacity: 1 } }
+  </style>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${c.lavender}"/>
+      <stop offset=".5" stop-color="${c.sakura}"/>
+      <stop offset="1" stop-color="${c.sky}"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="${c.titleA}"/>
+      <stop offset="1" stop-color="${c.titleB}"/>
+    </linearGradient>
+    <linearGradient id="logoFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="${c.sakura}"/>
+    </linearGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect x="7" y="7" width="2" height="2" fill="#FFFFFF" opacity=".45"/>
+    </pattern>
+    <clipPath id="body"><rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14"/></clipPath>
+    ${screen.defs}
+  </defs>
+  <rect x="${FX + 8}" y="${FX + 8}" width="${pw}" height="${ph}" rx="14" fill="${c.ink}"/>
+  <rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14" fill="url(#sky)"/>
+  <rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14" fill="url(#dots)"/>
+
+  <g clip-path="url(#body)">
+    ${bokeh([[140, 90, 110, 0], [1040, 80, 90, 3], [880, 260, 120, 6], [330, 270, 90, 8]])}
+    ${rainbow}
+    <g class="drift">${pixels(CLOUD, { o: c.ink, w: "#FFFFFF", s: c.lavender }, 120, 60, 6)}</g>
+    <g class="drift2">${pixels(CLOUD, { o: c.ink, w: "#FFFFFF", s: c.lavender }, 950, 120, 5)}</g>
+    <g class="drift">${pixels(CLOUD, { o: c.ink, w: "#FFFFFF", s: c.lavender }, 760, 40, 4)}</g>
+    ${sparkle(250, 170, 12, "#FFFFFF", 0)}
+    ${sparkle(1000, 210, 10, c.gold, 0.7)}
+    ${sparkle(330, 60, 8, c.gold, 1.4)}
+    ${sparkle(900, 50, 9, "#FFFFFF", 2.1)}
+    <path d="M${FX} ${ground + 6} Q 300 ${ground - 26} 600 ${ground + 2} T ${FX + pw} ${ground - 4} V ${FX + ph} H ${FX} Z" fill="${c.mint}" stroke="${c.ink}" stroke-width="3"/>
+    ${risers([80, 200, 330, 470, 610, 740, 860, 990, 1100], ground, ["#FFFFFF", c.gold, c.sakura])}
+
+    <!-- boot window -->
+    <g class="boot">
+      <rect x="${W / 2 - 214}" y="98" width="428" height="112" rx="12" fill="${c.ink}"/>
+      <rect x="${W / 2 - 220}" y="92" width="428" height="112" rx="12" fill="${c.paper}" stroke="${c.ink}" stroke-width="3"/>
+      <path d="M${W / 2 - 220} 104 a12 12 0 0 1 12 -12 h404 a12 12 0 0 1 12 12 v20 h-428 z" fill="url(#bar)"/>
+      <text x="${W / 2 - 204}" y="114" font-family="${MONO}" font-size="13" font-weight="700" fill="${c.paper}">boot.exe</text>
+      <text x="${W / 2 - 200}" y="152" font-family="${MONO}" font-size="16" fill="${c.ink}">booting TAWAN-OS ...</text>
+      <rect x="${W / 2 - 200}" y="166" width="388" height="20" rx="4" fill="#FFFFFF" stroke="${c.ink}" stroke-width="2"/>
+      <rect class="load" x="${W / 2 - 197}" y="169" width="382" height="14" rx="2" fill="${c.titleB}"/>
+    </g>
+
+    <!-- logo -->
+    <g class="logo">
+      ${pixelText(logo, lx + 8, ly + 8, ls, c.ink)}
+      ${pixelText(logo, lx + 4, ly + 4, ls, c.hotPink)}
+      <g class="logo-glitch">${pixelText(logo, lx - 6, ly, ls, c.sky)}</g>
+      <g class="logo-glitch" style="animation-direction:reverse">${pixelText(logo, lx + 6, ly, ls, c.gold)}</g>
+      ${pixelText(logo, lx, ly, ls, "url(#logoFill)")}
+    </g>
+    <g class="press">${pixelText(press, px + 3, 178, ps, c.ink)}${pixelText(press, px, 175, ps, "#FFFFFF")}</g>
+    ${heartBubble(lx + lw - 6, ly - 46, 4, 3.5)}
+
+    <!-- walker -->
+    <!-- the transform attribute is the resting spot in the still copy; the CSS animation overrides it -->
+    <g class="walk" transform="translate(150 0)">
+      <g class="step">${pixels(AVATAR, AVATAR_COLORS, 0, ground - AVATAR_H * 3 + 26, 3)}</g>
+    </g>
+
+    <!-- ticker -->
+    <rect x="${FX}" y="${tickerY}" width="${pw}" height="40" fill="url(#bar)"/>
+    <line x1="${FX}" y1="${tickerY}" x2="${FX + pw}" y2="${tickerY}" stroke="${c.ink}" stroke-width="3"/>
+    <g class="ticker">
+      ${Array.from({ length: copies }, (_, k) => `<text x="${FX + 16 + k * copyW}" y="${tickerY + 26}" textLength="${copyW}" lengthAdjust="spacing" font-family="${MONO}" font-size="17" font-weight="700" fill="${c.paper}">${esc(phrase)}</text>`).join("")}
+    </g>
+    ${screen.layer.replace('<g clip-path="url(#body)">', "<g>")}
+  </g>
+  <rect x="${FX}" y="${FX}" width="${pw}" height="${ph}" rx="14" fill="none" stroke="${c.ink}" stroke-width="3"/>
+</svg>
+`;
+}
+
 // ---------- taskbar buttons ----------
 
 function taskButton({ label, icon, fill, title }) {
@@ -637,11 +803,17 @@ if (failed) {
 // ---------- write ----------
 
 mkdirSync(outDir, { recursive: true });
-writeFileSync(join(outDir, "welcome.svg"), welcome());
-writeFileSync(join(outDir, "profile.svg"), profileCard());
-writeFileSync(join(outDir, "experience.svg"), experienceCard());
-writeFileSync(join(outDir, "projects.svg"), projectsCard());
-writeFileSync(join(outDir, "footer.svg"), footerCard());
-profile.gallery.forEach((g, i) => writeFileSync(join(outDir, `gallery-${g[0]}.svg`), galleryCard(g, i)));
+// animated cards also get a still copy for viewers who prefer reduced motion
+const writeCard = (name, svg) => {
+  writeFileSync(join(outDir, `${name}.svg`), svg);
+  writeFileSync(join(outDir, `${name}-still.svg`), still(svg));
+};
+writeCard("welcome", welcome());
+writeCard("profile", profileCard());
+writeCard("experience", experienceCard());
+writeCard("projects", projectsCard());
+writeCard("footer", footerCard());
+writeCard("banner", bannerCard());
+profile.gallery.forEach((g, i) => writeCard(`gallery-${g[0]}`, galleryCard(g, i)));
 for (const b of buttons) writeFileSync(join(outDir, b.file), taskButton(b));
-console.log(`wrote ${5 + profile.gallery.length + buttons.length} files to assets/`);
+console.log(`wrote ${2 * (6 + profile.gallery.length) + buttons.length} files to assets/`);

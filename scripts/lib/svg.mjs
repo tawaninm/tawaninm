@@ -253,8 +253,10 @@ export function windowChrome(W, H, title, icon, bodyFill) {
 
 // ---------- motion (shared by every card) ----------
 
-// One stylesheet for all cards. Everything stops under prefers-reduced-motion;
-// each element's resting state is a sensible static frame.
+// One stylesheet for all cards. Each element's resting state (no animation) is a complete
+// static frame. Chromium does not apply prefers-reduced-motion inside an SVG shown through
+// <img>, so the README swaps in a still copy (see still()) with <picture> instead; the media
+// block below only helps when the SVG is opened directly.
 export const MOTION_CSS = `
     .twinkle { transform-box: fill-box; transform-origin: center; animation: twinkle 2.4s ease-in-out infinite; }
     .drift { animation: drift 14s ease-in-out infinite alternate; }
@@ -370,4 +372,14 @@ export function wrap(text, max) {
   }
   if (line) lines.push(line);
   return lines;
+}
+
+// Still copy of an animated card for viewers who prefer reduced motion: CSS animation off,
+// elements that only appear mid-animation hidden, SMIL removed, the typewriter showing its
+// first line in full.
+export function still(svg) {
+  return svg
+    .replace("<style>", "<style>\n    * { animation: none !important; }\n    .glitch, .logo-glitch, .blink, .boot { opacity: 0 !important; }")
+    .replace(/<animate\b[^>]*\/>/g, "")
+    .replace(/(<clipPath id="type0"><rect [^>]*?)width="0"/, '$1width="600"');
 }

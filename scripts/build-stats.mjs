@@ -9,7 +9,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { profile, palette as c } from "./profile.mjs";
-import { SANS, MONO, esc, windowChrome, FX, MOTION_CSS, CHIP_FILLS, sparkle, heartBubble } from "./lib/svg.mjs";
+import { SANS, MONO, esc, windowChrome, FX, MOTION_CSS, CHIP_FILLS, sparkle, heartBubble, still } from "./lib/svg.mjs";
 
 const args = process.argv.slice(2);
 const sample = args.includes("--sample");
@@ -236,5 +236,7 @@ function statsCard(s) {
 
 const data = sample ? fixture() : await fetchLive();
 mkdirSync(outDir, { recursive: true });
-writeFileSync(join(outDir, "stats.svg"), statsCard(summarize(data)));
+const card = statsCard(summarize(data));
+writeFileSync(join(outDir, "stats.svg"), card);
+writeFileSync(join(outDir, "stats-still.svg"), still(card));
 console.log(`wrote ${join(outDir, "stats.svg")}${sample ? " (sample data)" : ""}`);
