@@ -28,15 +28,15 @@ export const profile = {
     ["Roblox Studio", 1, "Beginner"],
   ],
   inventory: ["Claude", "ChatGPT", "Gemini", "NotebookLM", "Python", "C#", "GDScript", "Java", "JavaScript", "HTML/CSS", "Lua", "SQL", "Figma"],
-  // experience.log — newest first. Sources: old README + portfolio resume page.
+  // experience.log — current roles first, then by end date (newest first). Sources: old README + portfolio resume page.
   // [icon, role, org, dates, current?, one-line highlight]
   experience: [
-    ["window", "UX/UI Designer Intern", "Gumon Technology", "Jun – Aug 2026", false, "Redesigned MonsTask UI; set up a 121-token design system"],
     ["heart", "Coding Teacher", "Code Genius EmQuartier", "Feb 2026 – Now", true, "Scratch, Micro:bit and Python for primary school students"],
+    ["window", "UX/UI Designer Intern", "Gumon Technology", "Jun – Aug 2026", false, "Redesigned MonsTask UI; set up a 121-token design system"],
     ["star", "Head of Game Workshop", "ITCAMP 22 · KMITL", "Apr – May 2026", false, "Unreal Engine 5 curriculum; trained the TA and TD team"],
-    ["code", "Teaching Assistant · Java OOP", "School of IT · KMITL", "Nov 2025 – Now", true, "1-on-1 code feedback for 100+ first-year students"],
-    ["folder", "Project Head · Roblox Workshop", "IT Openhouse 2025", "Nov 2025", false, "2-day Lua workshop; led 10+ TAs for 100+ students"],
+    ["code", "Teaching Assistant · Java OOP", "School of IT · KMITL", "Nov 2025 – Apr 2026", false, "1-on-1 code feedback for 100+ first-year students"],
     ["sun", "Coding & Math Tutor", "Login-Engineering Academy", "Sep 2024 – Mar 2026", false, "Godot, math and contest / portfolio projects"],
+    ["folder", "Project Head · Roblox Workshop", "IT Openhouse 2025", "Nov 2025", false, "2-day Lua workshop; led 10+ TAs for 100+ students"],
   ],
   // trophies sidebar: [title, detail, year]
   achievements: [
