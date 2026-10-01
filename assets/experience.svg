@@ -15,6 +15,7 @@
     .charge { animation: charge 6s ease-out infinite both; }
     .slidein { animation: slidein .6s cubic-bezier(.16,1,.3,1) 1 both; }
     .dot { transform-box: fill-box; animation: dot 1.2s ease-in-out infinite; }
+    .cursor { animation: cursor 12s ease-in-out infinite; }
     @keyframes twinkle { 0%,100% { transform: scale(1); opacity: 1 } 50% { transform: scale(.55); opacity: .6 } }
     @keyframes drift { from { transform: translateX(0) } to { transform: translateX(40px) } }
     @keyframes bokeh { from { transform: translate(0,0) scale(1) } to { transform: translate(24px,-18px) scale(1.12) } }
@@ -26,6 +27,13 @@
     @keyframes blink { 0% { opacity: 0 } 92% { opacity: 1 } 95% { opacity: 0 } }
     @keyframes charge { 0% { opacity: 0 } 12% { opacity: 1 } 88% { opacity: 1 } 100% { opacity: 0 } }
     @keyframes slidein { from { transform: translateX(-14px); opacity: 0 } to { transform: none; opacity: 1 } }
+    @keyframes cursor {
+      0%, 18% { transform: var(--p1) }
+      25%, 43% { transform: var(--p2) }
+      50%, 68% { transform: var(--p3) }
+      75%, 93% { transform: var(--p4) }
+      100% { transform: var(--p1) }
+    }
     @keyframes dot { 0%,60%,100% { transform: translateY(0) } 30% { transform: translateY(-5px) } }
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; }

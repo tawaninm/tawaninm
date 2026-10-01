@@ -118,6 +118,41 @@ const ICONS = {
     "..o....o..",
     "..........",
   ],
+  bot: [
+    "....oo....",
+    "....oo....",
+    ".oooooooo.",
+    "owwwwwwwwo",
+    "owoowwoowo",
+    "owoowwoowo",
+    "owwwppwwwo",
+    "owwwwwwwwo",
+    ".oooooooo.",
+  ],
+  doc: [
+    "ooooo..",
+    "owwwoo.",
+    "owwwwwo",
+    "owpppwo",
+    "owwwwwo",
+    "owsssso",
+    "owwwwwo",
+    "ooooooo",
+  ],
+  cursor: [
+    "o.......",
+    "oo......",
+    "owo.....",
+    "owwo....",
+    "owwwo...",
+    "owwwwo..",
+    "owwwwwo.",
+    "owwwoooo",
+    "owowo...",
+    "oo.owo..",
+    "o...owo.",
+    ".....o..",
+  ],
   trophy: [
     "oooooooooo",
     "oyyywyyYYo",
@@ -219,6 +254,7 @@ const MOTION_CSS = `
     .charge { animation: charge 6s ease-out infinite both; }
     .slidein { animation: slidein .6s cubic-bezier(.16,1,.3,1) 1 both; }
     .dot { transform-box: fill-box; animation: dot 1.2s ease-in-out infinite; }
+    .cursor { animation: cursor 12s ease-in-out infinite; }
     @keyframes twinkle { 0%,100% { transform: scale(1); opacity: 1 } 50% { transform: scale(.55); opacity: .6 } }
     @keyframes drift { from { transform: translateX(0) } to { transform: translateX(40px) } }
     @keyframes bokeh { from { transform: translate(0,0) scale(1) } to { transform: translate(24px,-18px) scale(1.12) } }
@@ -230,6 +266,13 @@ const MOTION_CSS = `
     @keyframes blink { 0% { opacity: 0 } 92% { opacity: 1 } 95% { opacity: 0 } }
     @keyframes charge { 0% { opacity: 0 } 12% { opacity: 1 } 88% { opacity: 1 } 100% { opacity: 0 } }
     @keyframes slidein { from { transform: translateX(-14px); opacity: 0 } to { transform: none; opacity: 1 } }
+    @keyframes cursor {
+      0%, 18% { transform: var(--p1) }
+      25%, 43% { transform: var(--p2) }
+      50%, 68% { transform: var(--p3) }
+      75%, 93% { transform: var(--p4) }
+      100% { transform: var(--p1) }
+    }
     @keyframes dot { 0%,60%,100% { transform: translateY(0) } 30% { transform: translateY(-5px) } }
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; }
@@ -656,6 +699,88 @@ function experienceCard() {
 `;
 }
 
+// ---------- projects.folder ----------
+
+function projectsCard() {
+  const W = 840;
+  const panelW = 386;
+  const itemH = 56;
+  const head = 34;
+  const rows = [0, 2].map((i) => Math.max(profile.projects[i][2].length, profile.projects[i + 1][2].length));
+  const panelH = rows.map((n) => head + 8 + n * itemH);
+  const top = 66;
+  const gap = 14;
+  const H = top + panelH[0] + gap + panelH[1] + 56 + 18;
+  const { defs, back, front, fh } = windowChrome(W, H, "projects.folder", "folder", c.paper);
+  const bottom = FX + fh;
+  const total = profile.projects.reduce((n, [, , items]) => n + items.length, 0);
+
+  let order = 0;
+  const panels = profile.projects
+    .map(([name, icon, items], k) => {
+      const x = 30 + (k % 2) * (panelW + 14);
+      const y = k < 2 ? top : top + panelH[0] + gap;
+      const h = panelH[k < 2 ? 0 : 1];
+      const fill = CHIP_FILLS[k % CHIP_FILLS.length];
+      const files = items
+        .map(([title, year, stack, note], j) => {
+          const iy = y + head + 8 + j * itemH;
+          const delay = (0.2 + order++ * 0.12).toFixed(2);
+          return `
+    <g class="slidein" style="animation-delay:${delay}s">
+      ${pixels(ICONS.doc, ICON_COLORS, x + 14, iy + 6, 3)}
+      <text x="${x + 44}" y="${iy + 16}" font-family="${SANS}" font-size="14" font-weight="700" fill="${c.ink}">${esc(title)}</text>
+      <text x="${x + panelW - 12}" y="${iy + 16}" text-anchor="end" font-family="${MONO}" font-size="11" fill="${c.ink}">${year}</text>
+      <text x="${x + 44}" y="${iy + 31}" font-family="${MONO}" font-size="10.5" fill="${c.ink}">${esc(stack)}</text>
+      <text x="${x + 44}" y="${iy + 46}" font-family="${SANS}" font-size="12" fill="${c.ink}">${esc(note)}</text>
+      ${j < items.length - 1 ? `<line x1="${x + 12}" y1="${iy + itemH - 2}" x2="${x + panelW - 12}" y2="${iy + itemH - 2}" stroke="${c.lavender}" stroke-width="1.5" stroke-dasharray="4 4"/>` : ""}
+    </g>`;
+        })
+        .join("");
+      return `
+  <rect x="${x}" y="${y}" width="${panelW}" height="${h}" rx="10" fill="#FFFFFF" stroke="${c.ink}" stroke-width="2"/>
+  <path d="M${x} ${y + 10} a10 10 0 0 1 10 -10 h${panelW - 20} a10 10 0 0 1 10 10 v${head - 10} h-${panelW} z" fill="${fill}"/>
+  <line x1="${x}" y1="${y + head}" x2="${x + panelW}" y2="${y + head}" stroke="${c.ink}" stroke-width="2"/>
+  <rect x="${x}" y="${y}" width="${panelW}" height="${h}" rx="10" fill="none" stroke="${c.ink}" stroke-width="2"/>
+  ${pixels(ICONS[icon], ICON_COLORS, x + 10, y + 8, 2)}
+  <text x="${x + 38}" y="${y + 22}" font-family="${MONO}" font-size="14" font-weight="700" fill="${c.ink}">${esc(name)}</text>
+  <rect x="${x + panelW - 74}" y="${y + 8}" width="62" height="18" rx="9" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/>
+  <text x="${x + panelW - 43}" y="${y + 21}" text-anchor="middle" font-family="${MONO}" font-size="11" fill="${c.ink}">${items.length} ${items.length === 1 ? "file" : "files"}</text>
+  ${files}`;
+    })
+    .join("");
+
+  // cursor hops between the four folder headers (empty space right of the name)
+  const hop = (k) => `translate(${30 + (k % 2) * (panelW + 14) + 230}px, ${(k < 2 ? top : top + panelH[0] + gap) + 4}px)`;
+  const cursorPath = [0, 1, 3, 2].map((k, i) => `--p${i + 1}:${hop(k)}`).join(";");
+
+  // status bar
+  const barY = bottom - 44;
+  const status = `
+  <rect x="30" y="${barY}" width="786" height="30" rx="8" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/>
+  <text x="46" y="${barY + 20}" font-family="${MONO}" font-size="12" fill="${c.ink}">${total} items · ${profile.projects.length} folders</text>
+  <text x="800" y="${barY + 20}" text-anchor="end" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.ink}">open full case studies on the portfolio →</text>`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t d">
+  <title id="t">projects.folder — TAWAN-OS</title>
+  <desc id="d">${esc(
+    profile.projects
+      .map(([name, , items]) => `${name}: ${items.map(([t, y, st, n]) => `${t} (${y}, ${st}) ${n}`).join("; ")}`)
+      .join(". ")
+  )}</desc>
+  <style>${MOTION_CSS}
+  </style>
+  <defs>${defs}
+  </defs>
+  ${back}
+  ${panels}
+  ${status}
+  <g class="cursor" style="${cursorPath}">${pixels(ICONS.cursor, { o: c.ink, w: "#FFFFFF" }, 0, 0, 3)}</g>
+  ${front}
+</svg>
+`;
+}
+
 // ---------- taskbar buttons ----------
 
 function taskButton({ label, icon, fill, title }) {
@@ -713,5 +838,6 @@ mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, "welcome.svg"), welcome());
 writeFileSync(join(outDir, "profile.svg"), profileCard());
 writeFileSync(join(outDir, "experience.svg"), experienceCard());
+writeFileSync(join(outDir, "projects.svg"), projectsCard());
 for (const b of buttons) writeFileSync(join(outDir, b.file), taskButton(b));
-console.log(`wrote ${3 + buttons.length} files to assets/`);
+console.log(`wrote ${4 + buttons.length} files to assets/`);

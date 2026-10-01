@@ -47,6 +47,31 @@ export const profile = {
     ["LINE Developers University", "Dialogflow + LINE Messaging API · 2025"],
     ["Game Business Workshop", "Gamification for business strategy · 2025"],
   ],
+  // projects.folder — from the portfolio site (src/data/projects.ts), ordered by focus.
+  // [folder name, icon, items: [title, year, stack, one-line note]]
+  projects: [
+    ["AI & Agents", "bot", [
+      ["TAWAN-OS", "2026", "Python · MCP · CLI agents", "Personal multi-agent workspace of CLI agents + MCP"],
+      ["HybriCareer AI", "2026", "AI skill radar · Lovable", "Skill-proof radar for career switchers; Top 10"],
+      ["Red Bull F1 3D", "2026", "Three.js · GSAP · agent harness", "3D F1 site built in a 1-week sprint with 17 subagents"],
+    ]],
+    ["Programming", "code", [
+      ["Disney Lorcana PlayLab", "2026", "AWS Lambda · WebSocket · DynamoDB", "Real-time multiplayer TCG on AWS at $0 server cost"],
+      ["Synchro", "2025", "ESP32 · JavaScript", "Rhythm-game controller with a TFT screen + web app"],
+      ["Drive@KMITL", "2024", "Next.js · FastAPI · WebSocket", "Random chat rooms themed as rides around campus"],
+    ]],
+    ["Games", "star", [
+      ["VPS-Tycoon", "2025", "Java · JavaFX · OOP", "Run a VPS hosting company starting in the year 2000"],
+      ["Criminal Minds", "2023", "Unity · NSC 25", "Forensic detective RPG; NSC second round"],
+      ["DETEC-CHEAT", "2022", "Unity · NSC 24", "Chat visual novel on cyber-fraud law; NSC final"],
+    ]],
+    ["Design & Cases", "window", [
+      ["Gumon MonsTask", "2026", "Figma · design tokens", "UI redesign and a 121-token design system"],
+      ["NOSE TEA 'Sip to Scale'", "2026", "O2O · financial model", "30-day growth plan with a ฿1.8M revenue model"],
+      ["Chao-dom", "2026", "Figma · usability testing", "iOS dorm-matching app built from user interviews"],
+      ["Polygon Mesh", "2025", "Figma · game-based learning", "From vertices to 3D meshes, then a jigsaw game"],
+    ]],
+  ],
   // trophies sidebar: [title, detail, year]
   achievements: [
     ["Top 10 Finalist", "Generation Thailand Hackathon · HybriCareer AI", "2026"],
@@ -66,6 +91,7 @@ export const profile = {
     portfolio: "https://porfolio-website-five-inky.vercel.app/",
     github: "https://github.com/tawaninm",
     mail: "mailto:tawaninm13@gmail.com",
+    projects: "https://porfolio-website-five-inky.vercel.app/projects",
   },
 };
 
