@@ -13,6 +13,22 @@ export const profile = {
     "teaching kids to code",
     "currently: UX/UI intern @ Gumon Technology",
   ],
+  // profile.sys — rows shown next to the avatar
+  stats: [
+    ["CLASS", "UX/UI Designer + Game Developer"],
+    ["GUILD", "IT KMITL · Multimedia & Game Tech · Year 3"],
+    ["JOB", "UX/UI Designer Intern @ Gumon Technology"],
+    ["SIDE QUEST", "Coding Teacher @ Code Genius EmQuartier"],
+  ],
+  // Levels are the ones stated on the portfolio: 3 = Intermediate, 1 = Beginner (out of 5).
+  engines: [
+    ["Godot", 3, "Intermediate"],
+    ["Unity", 3, "Intermediate"],
+    ["Unreal", 3, "Intermediate"],
+    ["Roblox Studio", 1, "Beginner"],
+  ],
+  inventory: ["Figma", "Illustrator", "Canva", "C#", "GDScript", "Java", "Python", "JavaScript", "HTML/CSS", "Lua", "SQL"],
+  motto: "take care of your work, and your work will take care of you.",
   links: {
     profile: "https://github.com/tawaninm",
     portfolio: "https://porfolio-website-five-inky.vercel.app/",

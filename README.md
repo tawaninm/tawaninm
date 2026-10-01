@@ -10,6 +10,8 @@
 
 <a href="https://github.com/tawaninm"><img src="assets/task-start.svg" alt="Start — TAWAN-OS" width="24%"></a> <a href="https://porfolio-website-five-inky.vercel.app/"><img src="assets/task-portfolio.svg" alt="Portfolio website" width="24%"></a> <a href="https://github.com/tawaninm"><img src="assets/task-github.svg" alt="GitHub — tawaninm" width="24%"></a> <a href="mailto:tawaninm13@gmail.com"><img src="assets/task-mail.svg" alt="Email — tawaninm13@gmail.com" width="24%"></a>
 
+<img src="assets/profile.svg" alt="profile.sys — Class: UX/UI Designer and Game Developer. Guild: IT KMITL, Multimedia &amp; Game Tech, year 3. Job: UX/UI Designer Intern at Gumon Technology. Side quest: Coding Teacher at Code Genius EmQuartier. Engine XP: Godot, Unity and Unreal intermediate (3 of 5), Roblox Studio beginner (1 of 5). Inventory: Figma, Illustrator, Canva, C#, GDScript, Java, Python, JavaScript, HTML/CSS, Lua, SQL. Motto: take care of your work, and your work will take care of you." width="100%">
+
 </div>
 
 # Hi ![](https://user-images.githubusercontent.com/18350557/176309783-0785949b-9127-417c-8b55-ab5a4333674e.gif) My name is Thanatpat Promthong

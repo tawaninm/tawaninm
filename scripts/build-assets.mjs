@@ -150,15 +150,52 @@ const CLOUD = [
   ".oooooooooooo.",
 ];
 
+// ---------- window chrome (shared by every card) ----------
+
+const FX = 10; // frame inset leaves room for the offset shadow
+const BAR = 42;
+
+// Returns the pieces of an app window: `defs` for <defs>, `back` to draw first
+// (shadow + body fill), `front` to draw last (title bar + outline).
+function windowChrome(W, H, title, icon, bodyFill) {
+  const fw = W - FX * 2 - 8;
+  const fh = H - FX * 2 - 8;
+  const defs = `
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="${c.titleA}"/>
+      <stop offset="1" stop-color="${c.titleB}"/>
+    </linearGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect x="7" y="7" width="2" height="2" fill="#FFFFFF" opacity=".45"/>
+    </pattern>
+    <clipPath id="body"><rect x="${FX}" y="${FX + BAR}" width="${fw}" height="${fh - BAR}"/></clipPath>`;
+  const back = `
+  <rect x="${FX + 8}" y="${FX + 8}" width="${fw}" height="${fh}" rx="14" fill="${c.ink}"/>
+  <rect x="${FX}" y="${FX}" width="${fw}" height="${fh}" rx="14" fill="${bodyFill}"/>
+  <rect x="${FX}" y="${FX + BAR}" width="${fw}" height="${fh - BAR}" fill="url(#dots)"/>`;
+  const buttons = ["_", "□", "×"]
+    .map((g, i) => {
+      const bx = FX + fw - 110 + i * 34;
+      return `<rect x="${bx}" y="${FX + 9}" width="26" height="24" rx="5" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/><text x="${bx + 13}" y="${FX + 26}" text-anchor="middle" font-family="${MONO}" font-size="15" font-weight="700" fill="${c.ink}">${g}</text>`;
+    })
+    .join("");
+  const front = `
+  <path d="M${FX} ${FX + 14} a14 14 0 0 1 14 -14 h${fw - 28} a14 14 0 0 1 14 14 v${BAR - 14} h-${fw} z" fill="url(#bar)"/>
+  <line x1="${FX}" y1="${FX + BAR}" x2="${FX + fw}" y2="${FX + BAR}" stroke="${c.ink}" stroke-width="3"/>
+  ${pixels(ICONS[icon], ICON_COLORS, FX + 14, FX + 12, 2)}
+  <text x="${FX + 42}" y="${FX + 27}" font-family="${MONO}" font-size="15" font-weight="700" fill="${c.paper}">${esc(title)}</text>
+  ${buttons}
+  <rect x="${FX}" y="${FX}" width="${fw}" height="${fh}" rx="14" fill="none" stroke="${c.ink}" stroke-width="3"/>`;
+  return { defs, back, front, fw, fh };
+}
+
 // ---------- welcome.svg ----------
 
 function welcome() {
   const W = 840;
   const H = 360;
-  const bar = 42;
-  const fx = 10; // frame inset leaves room for the offset shadow
-  const fw = W - fx * 2 - 8;
-  const fh = H - fx * 2 - 8;
+  const fx = FX;
+  const { defs, back, front, fw, fh } = windowChrome(W, H, "welcome.exe — TAWAN-OS", "heart", "url(#sky)");
 
   // Typewriter: each line reveals through a clip rect, one after another.
   const lines = profile.typewriter.map((t) => `> ${t}`);
@@ -224,20 +261,10 @@ function welcome() {
       <stop offset=".5" stop-color="${c.sakura}"/>
       <stop offset="1" stop-color="${c.sky}"/>
     </linearGradient>
-    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="${c.titleA}"/>
-      <stop offset="1" stop-color="${c.titleB}"/>
-    </linearGradient>
-    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
-      <rect x="7" y="7" width="2" height="2" fill="#FFFFFF" opacity=".45"/>
-    </pattern>
-    <clipPath id="body"><rect x="${fx}" y="${fx + bar}" width="${fw}" height="${fh - bar}" rx="0"/></clipPath>
+    ${defs}
   </defs>
 
-  <!-- shadow + frame -->
-  <rect x="${fx + 8}" y="${fx + 8}" width="${fw}" height="${fh}" rx="14" fill="${c.ink}"/>
-  <rect x="${fx}" y="${fx}" width="${fw}" height="${fh}" rx="14" fill="url(#sky)"/>
-  <rect x="${fx}" y="${fx + bar}" width="${fw}" height="${fh - bar}" fill="url(#dots)"/>
+  ${back}
 
   <!-- scenery -->
   <g clip-path="url(#body)">
@@ -251,18 +278,7 @@ function welcome() {
     ${sparkle(372, 210, 6, c.gold, 0.4)}
   </g>
 
-  <!-- title bar -->
-  <path d="M${fx} ${fx + 14} a14 14 0 0 1 14 -14 h${fw - 28} a14 14 0 0 1 14 14 v${bar - 14} h-${fw} z" fill="url(#bar)"/>
-  <line x1="${fx}" y1="${fx + bar}" x2="${fx + fw}" y2="${fx + bar}" stroke="${c.ink}" stroke-width="3"/>
-  ${pixels(ICONS.heart, ICON_COLORS, fx + 14, fx + 12, 2)}
-  <text x="${fx + 42}" y="${fx + 27}" font-family="${MONO}" font-size="15" font-weight="700" fill="${c.paper}">welcome.exe — TAWAN-OS</text>
-  ${["_", "□", "×"]
-    .map((g, i) => {
-      const bx = fx + fw - 110 + i * 34;
-      return `<rect x="${bx}" y="${fx + 9}" width="26" height="24" rx="5" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/><text x="${bx + 13}" y="${fx + 26}" text-anchor="middle" font-family="${MONO}" font-size="15" font-weight="700" fill="${c.ink}">${g}</text>`;
-    })
-    .join("")}
-  <rect x="${fx}" y="${fx}" width="${fw}" height="${fh}" rx="14" fill="none" stroke="${c.ink}" stroke-width="3"/>
+  ${front}
 
   <!-- greeting -->
   <rect x="38" y="72" width="132" height="26" rx="13" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/>
@@ -282,6 +298,120 @@ function welcome() {
   <rect x="34" y="${fx + fh - 30}" width="210" height="22" rx="11" fill="${c.paper}" stroke="${c.ink}" stroke-width="2"/>
   <circle cx="50" cy="${fx + fh - 19}" r="5" fill="#2F9E44" stroke="${c.ink}" stroke-width="1.5"/>
   <text x="62" y="${fx + fh - 14}" font-family="${MONO}" font-size="12" fill="${c.ink}">online · ${esc(profile.location)}</text>
+</svg>
+`;
+}
+
+// ---------- profile.sys ----------
+
+const MASCOT = [
+  ".oooooooooooo.",
+  "oSSSSSSSSSSSSo",
+  "oSkkkkkkkkkkSo",
+  "oSkkokkkkokkSo",
+  "oSkkokkkkokkSo",
+  "oSkpkkkkkkpkSo",
+  "oSkkkkookkkkSo",
+  "oSkkkkkkkkkkSo",
+  "oSSSSSSSSSSSSo",
+  ".oooooooooooo.",
+  ".....oSSo.....",
+  "...oooooooo...",
+];
+
+const CHIP_FILLS = [c.sakura, c.sky, c.mint, c.lavender, c.gold];
+const MONO12_W = 7.3; // approx advance of a 12px monospace glyph
+
+function profileCard() {
+  const W = 840;
+  const H = 440;
+  const { defs, back, front } = windowChrome(W, H, "profile.sys", "star", c.paper);
+  const rx = 256; // right column start
+  const rEnd = 800;
+
+  // left: avatar panel
+  const avatar = `
+  <rect x="30" y="70" width="200" height="236" rx="10" fill="${c.sky}" stroke="${c.ink}" stroke-width="2.5"/>
+  <g class="bob">${pixels(MASCOT, { o: c.ink, S: c.paper, k: c.lavender, p: c.hotPink }, 67, 88, 9)}</g>
+  <text x="130" y="236" text-anchor="middle" font-family="${SANS}" font-size="22" font-weight="700" fill="${c.ink}">${esc(profile.nickname)}</text>
+  <text x="130" y="258" text-anchor="middle" font-family="${MONO}" font-size="12" fill="${c.ink}">LV.3 · IT student</text>
+  <rect x="62" y="272" width="136" height="22" rx="11" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/>
+  <text x="130" y="287" text-anchor="middle" font-family="${MONO}" font-size="12" fill="${c.ink}">${esc(profile.location)}</text>`;
+
+  // right: stat rows
+  const rows = profile.stats
+    .map(([k, v], i) => {
+      const y = 92 + i * 28;
+      return `
+  <text x="${rx}" y="${y}" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.ink}">${esc(k)}</text>
+  <text x="${rx + 110}" y="${y}" font-family="${MONO}" font-size="14" fill="${c.ink}">${esc(v)}</text>
+  <line x1="${rx}" y1="${y + 9}" x2="${rEnd}" y2="${y + 9}" stroke="${c.lavender}" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+    })
+    .join("");
+
+  // engine bars: 5 segments, filled up to the stated level
+  const engines = profile.engines
+    .map(([name, level, label], i) => {
+      const x = rx + (i % 2) * 276;
+      const y = 234 + Math.floor(i / 2) * 40;
+      const segs = Array.from({ length: 5 }, (_, s) => {
+        const on = s < level;
+        return `<rect x="${x + 128 + s * 24}" y="${y - 12}" width="20" height="14" rx="2" fill="${on ? c.titleB : c.paper}" stroke="${c.ink}" stroke-width="1.5"/>`;
+      }).join("");
+      return `
+  <text x="${x}" y="${y}" font-family="${MONO}" font-size="13" font-weight="700" fill="${c.ink}">${esc(name)}</text>
+  <text x="${x}" y="${y + 16}" font-family="${MONO}" font-size="11" fill="${c.ink}">${esc(label)}</text>
+  ${segs}`;
+    })
+    .join("");
+
+  // inventory chips, wrapped to the right column
+  let cx = rx;
+  let cy = 336;
+  const chips = profile.inventory
+    .map((item, i) => {
+      const w = Math.ceil(item.length * MONO12_W) + 18;
+      if (cx + w > rEnd) {
+        cx = rx;
+        cy += 30;
+      }
+      const out = `<rect x="${cx}" y="${cy}" width="${w}" height="22" rx="11" fill="${CHIP_FILLS[i % CHIP_FILLS.length]}" stroke="${c.ink}" stroke-width="1.5"/><text x="${cx + w / 2}" y="${cy + 15}" text-anchor="middle" font-family="${MONO}" font-size="12" fill="${c.ink}">${esc(item)}</text>`;
+      cx += w + 6;
+      return out;
+    })
+    .join("");
+
+  const heading = (x, y, text) =>
+    `<rect x="${x}" y="${y - 15}" width="${Math.ceil(text.length * MONO12_W) + 20}" height="20" rx="4" fill="${c.ink}"/><text x="${x + 10}" y="${y}" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.paper}">${esc(text)}</text>`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t d">
+  <title id="t">profile.sys — TAWAN-OS</title>
+  <desc id="d">${esc(
+    `${profile.stats.map(([k, v]) => `${k}: ${v}`).join(". ")}. Engines: ${profile.engines
+      .map(([n, , l]) => `${n} ${l}`)
+      .join(", ")}. Inventory: ${profile.inventory.join(", ")}. Motto: ${profile.motto}`
+  )}</desc>
+  <style>
+    .bob { animation: bob 3s ease-in-out infinite; }
+    @keyframes bob { 50% { transform: translateY(-5px) } }
+    @media (prefers-reduced-motion: reduce) { .bob { animation: none } }
+  </style>
+  <defs>${defs}
+  </defs>
+  ${back}
+  ${avatar}
+  ${rows}
+  ${heading(rx, 208, "ENGINE XP")}
+  ${engines}
+  ${heading(rx, 324, "INVENTORY")}
+  ${chips}
+  <text x="130" y="336" text-anchor="middle" font-family="${MONO}" font-size="12" font-weight="700" fill="${c.ink}">MOTTO</text>
+  <text font-family="${SANS}" font-size="13" font-style="italic" fill="${c.ink}" text-anchor="middle">
+    <tspan x="130" y="356">“take care of your work,</tspan>
+    <tspan x="130" y="374">and your work will</tspan>
+    <tspan x="130" y="392">take care of you.”</tspan>
+  </text>
+  ${front}
 </svg>
 `;
 }
@@ -319,12 +449,16 @@ const textPairs = [
   ["ink on mint", c.ink, c.mint],
   ["paper on title start", c.paper, c.titleA],
   ["paper on title end", c.paper, c.titleB],
+  ["ink on gold", c.ink, c.gold],
+  ["paper on ink", c.paper, c.ink],
+  // non-text: filled vs empty skill segment needs 3:1 (WCAG 1.4.11)
+  ["segment filled vs empty", c.titleB, c.paper, 3],
 ];
 
 let failed = false;
-for (const [name, fg, bg] of textPairs) {
+for (const [name, fg, bg, min = 4.5] of textPairs) {
   const ratio = contrast(fg, bg);
-  const ok = ratio >= 4.5;
+  const ok = ratio >= min;
   if (!ok) failed = true;
   console.log(`${ok ? "pass" : "FAIL"}  ${ratio.toFixed(2)}:1  ${name}`);
 }
@@ -337,5 +471,6 @@ if (failed) {
 
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, "welcome.svg"), welcome());
+writeFileSync(join(outDir, "profile.svg"), profileCard());
 for (const b of buttons) writeFileSync(join(outDir, b.file), taskButton(b));
-console.log(`wrote ${1 + buttons.length} files to assets/`);
+console.log(`wrote ${2 + buttons.length} files to assets/`);
