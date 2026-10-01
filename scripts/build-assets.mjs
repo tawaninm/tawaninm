@@ -550,7 +550,7 @@ function wrap(text, max) {
 
 function experienceCard() {
   const W = 840;
-  const H = 540;
+  const H = 132 + profile.experience.length * 68; // header + bubbles + input bar
   const { defs, back, front, fw, fh } = windowChrome(W, H, "experience.log", "code", c.paper);
   const bottom = FX + fh;
 
