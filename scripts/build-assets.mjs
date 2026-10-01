@@ -5,6 +5,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { profile, palette as c } from "./profile.mjs";
+import { AVATAR, AVATAR_COLORS, AVATAR_EYES, AVATAR_W, AVATAR_H } from "./avatar.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = join(root, "assets");
@@ -394,21 +395,6 @@ function welcome() {
 
 // ---------- profile.sys ----------
 
-const MASCOT = [
-  ".oooooooooooo.",
-  "oSSSSSSSSSSSSo",
-  "oSkkkkkkkkkkSo",
-  "oSkkokkkkokkSo",
-  "oSkkokkkkokkSo",
-  "oSkpkkkkkkpkSo",
-  "oSkkkkookkkkSo",
-  "oSkkkkkkkkkkSo",
-  "oSSSSSSSSSSSSo",
-  ".oooooooooooo.",
-  ".....oSSo.....",
-  "...oooooooo...",
-];
-
 const CHIP_FILLS = [c.sakura, c.sky, c.mint, c.lavender, c.gold];
 const MONO12_W = 7.3; // approx advance of a 12px monospace glyph
 
@@ -419,18 +405,30 @@ function profileCard() {
   const rx = 256; // right column start
   const rEnd = 800;
 
-  // left: avatar panel
+  // left: avatar panel — a small pixel "screen" showing the avatar
+  const px = 4;
+  const scr = { x: 44, y: 82, w: 172, h: AVATAR_H * px };
+  const ax = 130 - (AVATAR_W * px) / 2;
+  const blink = AVATAR_EYES.map(([x, y, , h]) => `<rect x="${ax + x * px}" y="${scr.y + y * px}" width="${2 * px}" height="${(h - 1) * px}" fill="${AVATAR_COLORS.s}"/>`).join("");
   const avatar = `
   <rect x="30" y="70" width="200" height="236" rx="10" fill="${c.sky}" stroke="${c.ink}" stroke-width="2.5"/>
-  <g class="bob">
-    ${pixels(MASCOT, { o: c.ink, S: c.paper, k: c.lavender, p: c.hotPink }, 67, 88, 9)}
-    <g class="blink"><rect x="${67 + 4 * 9}" y="${88 + 3 * 9}" width="9" height="9" fill="${c.lavender}"/><rect x="${67 + 9 * 9}" y="${88 + 3 * 9}" width="9" height="9" fill="${c.lavender}"/></g>
+  <rect x="${scr.x}" y="${scr.y}" width="${scr.w}" height="${scr.h}" fill="url(#screenBg)"/>
+  <rect x="${scr.x}" y="${scr.y}" width="${scr.w}" height="${scr.h}" fill="url(#halftone)"/>
+  <g clip-path="url(#screen)">
+    ${sparkle(scr.x + 18, scr.y + 22, 6, "#FFFFFF", 0.3)}
+    ${sparkle(scr.x + scr.w - 16, scr.y + 60, 5, c.gold, 1.1)}
+    ${sparkle(scr.x + 14, scr.y + 104, 4, "#FFFFFF", 1.9)}
+    <g class="bob">
+      ${pixels(AVATAR, AVATAR_COLORS, ax, scr.y, px)}
+      <g class="blink">${blink}</g>
+    </g>
   </g>
-  ${heartBubble(176, 74, 3, 1.2)}
-  <text x="130" y="236" text-anchor="middle" font-family="${SANS}" font-size="22" font-weight="700" fill="${c.ink}">${esc(profile.nickname)}</text>
-  <text x="130" y="258" text-anchor="middle" font-family="${MONO}" font-size="12" fill="${c.ink}">LV.3 · IT student</text>
-  <rect x="62" y="272" width="136" height="22" rx="11" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/>
-  <text x="130" y="287" text-anchor="middle" font-family="${MONO}" font-size="12" fill="${c.ink}">${esc(profile.location)}</text>`;
+  <rect x="${scr.x}" y="${scr.y}" width="${scr.w}" height="${scr.h}" fill="none" stroke="${c.ink}" stroke-width="2.5"/>
+  ${heartBubble(170, 70, 3, 1.2)}
+  <text x="130" y="250" text-anchor="middle" font-family="${SANS}" font-size="22" font-weight="700" fill="${c.ink}">${esc(profile.nickname)}</text>
+  <text x="130" y="268" text-anchor="middle" font-family="${MONO}" font-size="12" fill="${c.ink}">LV.3 · IT student</text>
+  <rect x="62" y="278" width="136" height="22" rx="11" fill="${c.paper}" stroke="${c.ink}" stroke-width="1.5"/>
+  <text x="130" y="293" text-anchor="middle" font-family="${MONO}" font-size="12" fill="${c.ink}">${esc(profile.location)}</text>`;
 
   // right: stat rows
   const rows = profile.stats
@@ -492,6 +490,14 @@ function profileCard() {
   <style>${MOTION_CSS}
   </style>
   <defs>${defs}
+    <linearGradient id="screenBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${c.sakura}"/>
+      <stop offset="1" stop-color="${c.lavender}"/>
+    </linearGradient>
+    <pattern id="halftone" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect x="3" y="3" width="2" height="2" fill="#FFFFFF" opacity=".5"/>
+    </pattern>
+    <clipPath id="screen"><rect x="44" y="82" width="172" height="${AVATAR_H * 4}"/></clipPath>
   </defs>
   ${back}
   ${avatar}
